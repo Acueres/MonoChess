@@ -5,9 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace SharpChess
+namespace MonoChess
 {
     public class Board
     {
@@ -19,26 +20,8 @@ namespace SharpChess
         Dictionary<string, Texture2D> textures;
 
         Piece[,] board = new Piece[8, 8];
+        Piece draggedPiece;
 
-        readonly Dictionary<Pieces, string> whiteFigures = new()
-        {
-            [Pieces.Pawn] = "♙",
-            [Pieces.Knight] = "♘",
-            [Pieces.Bishop] = "♗",
-            [Pieces.Rook] = "♖",
-            [Pieces.Queen] = "♕",
-            [Pieces.King] = "♔"
-        };
-
-        readonly Dictionary<Pieces, string> blackFigures = new()
-        {
-            [Pieces.Pawn] = "♟",
-            [Pieces.Knight] = "♞",
-            [Pieces.Bishop] = "♝",
-            [Pieces.Rook] = "♜",
-            [Pieces.Queen] = "♛",
-            [Pieces.King] = "♚"
-        };
 
         public Board(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, SpriteFont font)
         {
@@ -70,15 +53,42 @@ namespace SharpChess
             return board[pos.Rank, pos.File];
         }
 
-        public void Move(Piece piece, Position old, Position _new)
+        public void Move(Piece piece, Position pos)
         {
-            piece.Position = _new;
-            board[_new.Rank, _new.File] = piece;
-            board[old.Rank, old.File] = null;
+            var oldPos = piece.Position;
+            piece.Position = pos;
+
+            var movedPiece = piece.Clone();
+
+            board[pos.Rank, pos.File] = movedPiece;
+            board[oldPos.Rank, oldPos.File] = null;
+        }
+
+        public void Update()
+        {
+            MouseState ms = Mouse.GetState();
+            var pos = GetCursorPosition(ms.X, ms.Y);
+
+            if (draggedPiece == null && ms.LeftButton == ButtonState.Pressed)
+            {
+                draggedPiece = board[pos.Rank, pos.File];
+            }
+
+            if (draggedPiece != null && ms.LeftButton == ButtonState.Released)
+            {
+                if (board[pos.Rank, pos.File] == null)
+                {
+                    Move(draggedPiece, pos);
+                }
+
+                draggedPiece = null;
+            }
         }
 
         public void Draw()
         {
+            Rectangle rect;
+            MouseState ms = Mouse.GetState();
             var size = (int)(graphics.PreferredBackBufferWidth / 8f);
 
             for (int x = 0; x < 8; x++)
@@ -86,23 +96,33 @@ namespace SharpChess
                 for (int y = 0; y < 8; y++)
                 {
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
-                    Rectangle rect = new(x * size, y * size, size, size);
+                    rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
 
                     if (board[x, y] != null)
                     {
-                        string side = board[x, y].Side == Sides.White ? "w" : "b";
-                        string pieceType = board[x, y].Type.ToString().ToLower();
-                        string pieceName = side + "_" + pieceType;
+                        if (draggedPiece != null && board[x, y] == draggedPiece)
+                        {
+                            continue;
+                        }
 
                         rect.Height = (int)(rect.Height * 0.8f);
                         rect.Width = (int)(rect.Width * 0.7f);
                         rect.Y += (int)(rect.Height * 0.2f);
                         rect.X += (int)(rect.Width * 0.2f);
 
-                        spriteBatch.Draw(textures[pieceName], rect, Color.White);
+                        spriteBatch.Draw(textures[board[x, y].Name], rect, Color.White);
                     }
                 }
+            }
+
+            if (draggedPiece != null)
+            {
+                rect = new(ms.X, ms.Y, (int)(size * 0.7f), (int)(size * 0.8f));
+                rect.X -= (int)(0.5f * rect.Width);
+                rect.Y -= (int)(0.5f * rect.Height);
+
+                spriteBatch.Draw(textures[draggedPiece.Name], rect, Color.White);
             }
         }
 
@@ -122,25 +142,25 @@ namespace SharpChess
 
             foreach (var side in new Sides[] { Sides.Black, Sides.White})
             {
-                int rank = side == Sides.Black ? 0 : 7;
+                int file = side == Sides.Black ? 0 : 7;
 
-                for (int file = 0; file < 8; file++)
+                for (int rank = 0; rank < 8; rank++)
                 {
-                    board[rank, file] = new Piece(arrangementOrder[file], side, new Position(rank, file));
+                    board[file, rank] = new Piece(arrangementOrder[rank], side, new Position(file, rank));
                 }
 
                 if (side == Sides.Black)
                 {
-                    rank++;
+                    file++;
                 }
                 else
                 {
-                    rank--;
+                    file--;
                 }
 
-                for (int file = 0; file < 8; file++)
+                for (int rank = 0; rank < 8; rank++)
                 {
-                    board[rank, file] = new Piece(Pieces.Pawn, side, new Position(rank, file));
+                    board[file, rank] = new Piece(Pieces.Pawn, side, new Position(rank, file));
                 }
             }
 
@@ -163,6 +183,14 @@ namespace SharpChess
             }
 
             return result;
+        }
+
+        //Gets cursor's file and rank position
+        Position GetCursorPosition(int x, int y)
+        {
+            var size = (int)(graphics.PreferredBackBufferWidth / 8f);
+            var pos = new Position(x, y);
+            return pos / size;
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace SharpChess
+namespace MonoChess
 {
     class Program
     {

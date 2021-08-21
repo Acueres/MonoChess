@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SpriteFontPlus;
 
 
-namespace SharpChess
+namespace MonoChess
 {
     public enum Pieces
     {
@@ -79,6 +79,11 @@ namespace SharpChess
 
         protected override void Update(GameTime gameTime)
         {
+            if (IsActive)
+            {
+                board.Update();
+            }
+
             base.Update(gameTime);
         }
 
