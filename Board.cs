@@ -16,11 +16,13 @@ namespace MonoChess
         SpriteBatch spriteBatch;
         Texture2D whiteTile;
         Texture2D blackTile;
+        Texture2D goldTile;
         SpriteFont font;
         Dictionary<string, Texture2D> textures;
 
         Piece[,] board = new Piece[8, 8];
         Piece draggedPiece;
+        List<Position> allowedMoves = new();
 
 
         public Board(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, SpriteFont font)
@@ -45,12 +47,19 @@ namespace MonoChess
             }
             blackTile.SetData(data);
 
+            goldTile = new Texture2D(graphics.GraphicsDevice, 50, 50);
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = Color.Gold;
+            }
+            goldTile.SetData(data);
+
             Fill();
         }
 
         public Piece Get(Position pos)
         {
-            return board[pos.Rank, pos.File];
+            return board[pos.X, pos.Y];
         }
 
         public void Move(Piece piece, Position pos)
@@ -60,8 +69,8 @@ namespace MonoChess
 
             var movedPiece = piece.Clone();
 
-            board[pos.Rank, pos.File] = movedPiece;
-            board[oldPos.Rank, oldPos.File] = null;
+            board[pos.X, pos.Y] = movedPiece;
+            board[oldPos.X, oldPos.Y] = null;
         }
 
         public void Update()
@@ -71,18 +80,20 @@ namespace MonoChess
 
             if (draggedPiece == null && ms.LeftButton == ButtonState.Pressed)
             {
-                draggedPiece = board[pos.Rank, pos.File];
+                draggedPiece = board[pos.X, pos.Y];
             }
 
             if (draggedPiece != null && ms.LeftButton == ButtonState.Released)
             {
-                if (board[pos.Rank, pos.File] == null)
+                if (board[pos.X, pos.Y] == null && allowedMoves.Contains(pos))
                 {
                     Move(draggedPiece, pos);
                 }
 
                 draggedPiece = null;
             }
+
+            allowedMoves.Clear();
         }
 
         public void Draw()
@@ -98,6 +109,7 @@ namespace MonoChess
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
+                    spriteBatch.DrawString(font, x + " " + y, new Vector2(x * size, y * size), Color.Red);
 
                     if (board[x, y] != null)
                     {
@@ -112,6 +124,11 @@ namespace MonoChess
                         rect.X += (int)(rect.Width * 0.2f);
 
                         spriteBatch.Draw(textures[board[x, y].Name], rect, Color.White);
+                    }
+                    else if (draggedPiece != null && draggedPiece.MoveAllowed(new Position(x, y), board))
+                    {
+                        allowedMoves.Add(new(x, y));
+                        spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
                     }
                 }
             }
@@ -142,47 +159,27 @@ namespace MonoChess
 
             foreach (var side in new Sides[] { Sides.Black, Sides.White})
             {
-                int file = side == Sides.Black ? 0 : 7;
+                int y = side == Sides.Black ? 0 : 7;
 
-                for (int rank = 0; rank < 8; rank++)
+                for (int x = 0; x < 8; x++)
                 {
-                    board[file, rank] = new Piece(arrangementOrder[rank], side, new Position(file, rank));
+                    board[x, y] = new Piece(arrangementOrder[x], side, new Position(x, y));
                 }
 
                 if (side == Sides.Black)
                 {
-                    file++;
+                    y++;
                 }
                 else
                 {
-                    file--;
+                    y--;
                 }
 
-                for (int rank = 0; rank < 8; rank++)
+                for (int x = 0; x < 8; x++)
                 {
-                    board[file, rank] = new Piece(Pieces.Pawn, side, new Position(rank, file));
+                    board[x, y] = new Piece(Pieces.Pawn, side, new Position(x, y));
                 }
             }
-
-            board = Transpose(board);
-        }
-
-        private static Piece[,] Transpose(Piece[,] matrix)
-        {
-            var rows = matrix.GetLength(0);
-            var columns = matrix.GetLength(1);
-
-            var result = new Piece[columns, rows];
-
-            for (var c = 0; c < columns; c++)
-            {
-                for (var r = 0; r < rows; r++)
-                {
-                    result[c, r] = matrix[r, c];
-                }
-            }
-
-            return result;
         }
 
         //Gets cursor's file and rank position

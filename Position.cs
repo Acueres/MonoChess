@@ -4,42 +4,56 @@ namespace MonoChess
 {
     public struct Position
     {
-        public int Rank { get; set; } //x-axis
-        public int File { get; set; } //y-axis
+        public int X { get; set; } //rank
+        public int Y { get; set; } //file
 
-        public Position(int rank, int file)
+        public Position(int x, int y)
         {
-            Rank = rank;
-            File = file;
+            X = x;
+            Y = y;
         }
 
-        public Position(int[] pos)
+        public Position Direction()
         {
-            Rank = pos[0];
-            File = pos[1];
+            return new Position(Math.Sign(X), Math.Sign(Y));
+        }
+
+        public static Position operator +(Position val1, Position val2)
+        {
+            return new Position(val1.X + val2.X, val1.Y + val2.Y);
+        }
+
+        public static Position operator -(Position val1, Position val2)
+        {
+            return new Position(val1.X - val2.X, val1.Y - val2.Y);
+        }
+
+        public static Position operator *(Position val, int multiplier)
+        {
+            return new Position(val.X * multiplier, val.Y * multiplier);
         }
 
         public static Position operator / (Position val, int divider)
         {
-            val.Rank /= divider;
-            val.File /= divider;
+            val.X /= divider;
+            val.Y /= divider;
 
             return val;
         }
 
         public static bool operator ==(Position val1, Position val2)
         {
-            return val1.Rank == val2.Rank && val1.File == val2.File;
+            return val1.X == val2.X && val1.Y == val2.Y;
         }
 
         public static bool operator !=(Position val1, Position val2)
         {
-            return val1.Rank != val2.Rank || val1.File != val2.File;
+            return val1.X != val2.X || val1.Y != val2.Y;
         }
 
         public override string ToString()
         {
-            return $"{{rank: {Rank}, file: {File}}}";
+            return $"{{x-rank: {X}, y-file: {Y}}}";
         }
 
         public override bool Equals(object obj)
@@ -50,13 +64,13 @@ namespace MonoChess
             }
 
             Position p = (Position)obj;
-            return Rank == p.Rank && File == p.File;
+            return X == p.X && Y == p.Y;
 
         }
 
         public override int GetHashCode()
         {
-            return Tuple.Create(Rank, File).GetHashCode();
+            return Tuple.Create(X, Y).GetHashCode();
         }
     }
 }
