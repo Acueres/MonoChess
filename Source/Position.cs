@@ -56,18 +56,6 @@ namespace MonoChess
             return $"{{x-rank: {X}, y-file: {Y}}}";
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null || !GetType().Equals(obj.GetType()))
-            {
-                return false;
-            }
-
-            Position p = (Position)obj;
-            return X == p.X && Y == p.Y;
-
-        }
-
         public override int GetHashCode()
         {
             return Tuple.Create(X, Y).GetHashCode();

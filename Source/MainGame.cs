@@ -12,6 +12,7 @@ namespace MonoChess
 {
     public enum Pieces
     {
+        Null,
         Pawn,
         Knight,
         Bishop,
@@ -26,14 +27,14 @@ namespace MonoChess
         Black
     }
 
-    public class Chess : Game
+    public class MainGame : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Board board;
+        Chess board;
 
-        public Chess()
+        public MainGame()
         {
             graphics = new GraphicsDeviceManager(this)
             {
@@ -67,7 +68,7 @@ namespace MonoChess
 
             var textures = LoadTextures();
 
-            board = new Board(graphics, spriteBatch, textures, font);
+            board = new Chess(graphics, spriteBatch, textures, font);
 
             base.Initialize();
         }

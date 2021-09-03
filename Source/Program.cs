@@ -8,7 +8,7 @@ namespace MonoChess
     {
         static void Main()
         {
-            using Chess chess = new();
+            using MainGame chess = new();
             chess.Run();
         }
     }
