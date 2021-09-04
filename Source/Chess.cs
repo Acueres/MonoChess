@@ -20,10 +20,9 @@ namespace MonoChess
         SpriteFont font;
         Dictionary<string, Texture2D> textures;
 
-        Piece[,] board = new Piece[8, 8];
+        Board board = new();
         Piece draggedPiece;
         List<Position> allowedMoves = new();
-
 
         public Chess(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, SpriteFont font)
         {
@@ -53,40 +52,34 @@ namespace MonoChess
                 data[i] = Color.Gold;
             }
             goldTile.SetData(data);
-
-            SetInitialPlacement();
-        }
-
-        public void Move(Piece piece, Position pos)
-        {
-            var oldPos = piece.Position;
-            piece.Position = pos;
-
-            board[pos.X, pos.Y] = piece;
-            board[oldPos.X, oldPos.Y] = new Piece();
         }
 
         public void Update()
         {
             MouseState ms = Mouse.GetState();
             var pos = GetCursorPosition(ms.X, ms.Y);
+            pos.X = Math.Clamp(pos.X, 0, 7);
+            pos.Y = Math.Clamp(pos.Y, 0, 7);
 
-            if (draggedPiece.IsNull && ms.LeftButton == ButtonState.Pressed)
+            if (draggedPiece.IsNull && !board[pos].IsNull && ms.LeftButton == ButtonState.Pressed)
             {
-                draggedPiece = board[pos.X, pos.Y];
+                draggedPiece = board[pos]; //select piece to move
+                foreach (var move in board.GenerateMoves(draggedPiece))
+                {
+                    allowedMoves.Add(move);
+                }
             }
 
             if (!draggedPiece.IsNull && ms.LeftButton == ButtonState.Released)
             {
-                if ((board[pos.X, pos.Y].IsNull || board[pos.X, pos.Y].Side != draggedPiece.Side) && allowedMoves.Contains(pos))
+                if ((board[pos].IsNull || board[pos].Side != draggedPiece.Side) && allowedMoves.Contains(pos))
                 {
-                    Move(draggedPiece, pos);
+                    board.Move(draggedPiece, pos);
                 }
 
                 draggedPiece = new Piece();
+                allowedMoves.Clear();
             }
-
-            allowedMoves.Clear();
         }
 
         public void Draw()
@@ -99,14 +92,15 @@ namespace MonoChess
             {
                 for (int y = 0; y < 8; y++)
                 {
+                    Position pos = new(x, y);
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
                     spriteBatch.DrawString(font, x + " " + y, new Vector2(x * size, y * size), Color.Red);
 
-                    if (!board[x, y].IsNull)
+                    if (!board[pos].IsNull)
                     {
-                        if (!draggedPiece.IsNull && board[x, y] == draggedPiece)
+                        if (!draggedPiece.IsNull && board[pos] == draggedPiece)
                         {
                             continue;
                         }
@@ -116,24 +110,7 @@ namespace MonoChess
                         rect.Y += (int)(rect.Height * 0.2f);
                         rect.X += (int)(rect.Width * 0.2f);
 
-                        spriteBatch.Draw(textures[board[x, y].Name], rect, Color.White);
-                    }
-
-                    if (draggedPiece.IsNull) continue;
-
-                    //Move if tile is empty
-                    if (board[x, y].IsNull && draggedPiece.MoveAllowed(new Position(x, y), board))
-                    { 
-                        allowedMoves.Add(new(x, y));
-                        spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
-                        continue;
-                    }
-
-                    //Attack
-                    if (!board[x, y].IsNull && board[x, y].Side != draggedPiece.Side && draggedPiece.AttackAllowed(new Position(x, y), board))
-                    {
-                        allowedMoves.Add(new(x, y));
-                        spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
+                        spriteBatch.Draw(textures[board[pos].Name], rect, Color.White);
                     }
                 }
             }
@@ -146,44 +123,13 @@ namespace MonoChess
                 rect.Y -= (int)(0.5f * rect.Height);
 
                 spriteBatch.Draw(textures[draggedPiece.Name], rect, Color.White);
-            }
-        }
 
-        private void SetInitialPlacement()
-        {
-            var arrangementOrder = new Pieces[]
-            {
-                Pieces.Rook,
-                Pieces.Knight,
-                Pieces.Bishop,
-                Pieces.King,
-                Pieces.Queen,
-                Pieces.Bishop,
-                Pieces.Knight,
-                Pieces.Rook
-            };
-
-            foreach (var side in new Sides[] { Sides.Black, Sides.White})
-            {
-                int y = side == Sides.Black ? 0 : 7;
-
-                for (int x = 0; x < 8; x++)
+                rect = new(0, 0, size, size);
+                foreach (var move in allowedMoves)
                 {
-                    board[x, y] = new Piece(arrangementOrder[x], side, new Position(x, y));
-                }
-
-                if (side == Sides.Black)
-                {
-                    y++;
-                }
-                else
-                {
-                    y--;
-                }
-
-                for (int x = 0; x < 8; x++)
-                {
-                    board[x, y] = new Piece(Pieces.Pawn, side, new Position(x, y));
+                    rect.X = move.X * size;
+                    rect.Y = move.Y * size;
+                    spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
                 }
             }
         }

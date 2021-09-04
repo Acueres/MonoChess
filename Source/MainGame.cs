@@ -32,7 +32,7 @@ namespace MonoChess
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        Chess board;
+        Chess chess;
 
         public MainGame()
         {
@@ -68,7 +68,7 @@ namespace MonoChess
 
             var textures = LoadTextures();
 
-            board = new Chess(graphics, spriteBatch, textures, font);
+            chess = new Chess(graphics, spriteBatch, textures, font);
 
             base.Initialize();
         }
@@ -82,7 +82,7 @@ namespace MonoChess
         {
             if (IsActive)
             {
-                board.Update();
+                chess.Update();
             }
 
             base.Update(gameTime);
@@ -94,7 +94,7 @@ namespace MonoChess
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-            board.Draw();
+            chess.Draw();
 
             spriteBatch.End();
 

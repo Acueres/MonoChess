@@ -7,15 +7,18 @@ namespace MonoChess
         public int X { get; set; } //rank
         public int Y { get; set; } //file
 
+        public bool Straight
+        {
+            get
+            {
+                return Math.Abs(X) + Math.Abs(Y) == 1;
+            }
+        }
+
         public Position(int x, int y)
         {
             X = x;
             Y = y;
-        }
-
-        public Position Direction()
-        {
-            return new Position(Math.Sign(X), Math.Sign(Y));
         }
 
         public static Position operator +(Position val1, Position val2)
