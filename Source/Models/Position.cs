@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MonoChess
+namespace MonoChess.Models
 {
     public struct Position
     {

@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
+using MonoChess.Controllers;
+using MonoChess.Models;
 
 namespace MonoChess
 {
     public class Chess
     {
+        public static int ScreenWidth { get; set; }
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D whiteTile;
@@ -20,9 +24,11 @@ namespace MonoChess
         SpriteFont font;
         Dictionary<string, Texture2D> textures;
 
+        AIController ai;
+        PlayerController player;
         Board board = new();
-        Piece draggedPiece;
-        List<Position> allowedMoves = new();
+
+        Sides turn = Sides.White;
 
         public Chess(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, SpriteFont font)
         {
@@ -30,6 +36,11 @@ namespace MonoChess
             this.spriteBatch = spriteBatch;
             this.textures = textures;
             this.font = font;
+
+            ScreenWidth = (int)(graphics.PreferredBackBufferWidth / 8f);
+
+            ai = new(board);
+            player = new(board);
 
             whiteTile = new Texture2D(graphics.GraphicsDevice, 50, 50);
             Color[] data = new Color[50 * 50];
@@ -56,29 +67,21 @@ namespace MonoChess
 
         public void Update()
         {
-            MouseState ms = Mouse.GetState();
-            var pos = GetCursorPosition(ms.X, ms.Y);
-            pos.X = Math.Clamp(pos.X, 0, 7);
-            pos.Y = Math.Clamp(pos.Y, 0, 7);
-
-            if (draggedPiece.IsNull && !board[pos].IsNull && ms.LeftButton == ButtonState.Pressed)
+            if (turn == Sides.Black)
             {
-                draggedPiece = board[pos]; //select piece to move
-                foreach (var move in board.GenerateMoves(draggedPiece))
-                {
-                    allowedMoves.Add(move);
-                }
+                Move move = ai.NextMove(Sides.Black);
+                board.MakeMove(move);
+                turn = Sides.White;
             }
-
-            if (!draggedPiece.IsNull && ms.LeftButton == ButtonState.Released)
+            else
             {
-                if ((board[pos].IsNull || board[pos].Side != draggedPiece.Side) && allowedMoves.Contains(pos))
-                {
-                    board.Move(draggedPiece, pos);
-                }
+                Move move = player.NextMove(Sides.White);
 
-                draggedPiece = new Piece();
-                allowedMoves.Clear();
+                if (!move.IsNull)
+                {
+                    board.MakeMove(move);
+                    turn = Sides.Black;
+                }
             }
         }
 
@@ -96,11 +99,12 @@ namespace MonoChess
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
+                    //shows coordinates for debugging
                     spriteBatch.DrawString(font, x + " " + y, new Vector2(x * size, y * size), Color.Red);
 
                     if (!board[pos].IsNull)
                     {
-                        if (!draggedPiece.IsNull && board[pos] == draggedPiece)
+                        if (!player.DraggedPiece.IsNull && board[pos] == player.DraggedPiece)
                         {
                             continue;
                         }
@@ -116,30 +120,22 @@ namespace MonoChess
             }
 
             //Draw dragged piece at cursor's position
-            if (!draggedPiece.IsNull)
+            if (!player.DraggedPiece.IsNull)
             {
                 rect = new(ms.X, ms.Y, (int)(size * 0.7f), (int)(size * 0.8f));
                 rect.X -= (int)(0.5f * rect.Width);
                 rect.Y -= (int)(0.5f * rect.Height);
 
-                spriteBatch.Draw(textures[draggedPiece.Name], rect, Color.White);
+                spriteBatch.Draw(textures[player.DraggedPiece.Name], rect, Color.White);
 
                 rect = new(0, 0, size, size);
-                foreach (var move in allowedMoves)
+                foreach (var move in player.AllowedMoves)
                 {
                     rect.X = move.X * size;
                     rect.Y = move.Y * size;
                     spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
                 }
             }
-        }
-
-        //Gets cursor's file and rank position
-        Position GetCursorPosition(int x, int y)
-        {
-            var size = (int)(graphics.PreferredBackBufferWidth / 8f);
-            var pos = new Position(x, y);
-            return pos / size;
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using MonoChess.Models;
+
 namespace MonoChess
 {
     public class Board
@@ -20,7 +22,12 @@ namespace MonoChess
             get => board[pos.X, pos.Y];
         }
 
-        public void Move(Piece piece, Position pos)
+        public void MakeMove(Move move)
+        {
+            MakeMove(move.Piece, move.Position);
+        }
+
+        public void MakeMove(Piece piece, Position pos)
         {
             var oldPos = piece.Position;
             piece.Position = pos;
@@ -29,7 +36,21 @@ namespace MonoChess
             board[oldPos.X, oldPos.Y] = new Piece();
         }
 
-        public IEnumerable<Position> GenerateMoves(Piece piece)
+        public IEnumerable<Piece> GetPieces(Sides side)
+        {
+            for (int x = 0; x < board.GetLength(0); x++)
+            {
+                for (int y = 0; y < board.GetLength(1); y++)
+                {
+                    if (board[x, y].Side == side)
+                    {
+                        yield return board[x, y];
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<Move> GenerateMoves(Piece piece)
         {
             foreach (var dir in Piece.Directions[piece.Type])
             {
@@ -48,7 +69,7 @@ namespace MonoChess
 
                         if (board[move.X, move.Y].Side != piece.Side)
                         {
-                            yield return move;
+                            yield return new Move(piece, move);
                         }
                         break; //path blocked
                     }
@@ -58,7 +79,7 @@ namespace MonoChess
                             break; //prevent pawn lateral movement
                         }
 
-                        yield return move;
+                        yield return new Move(piece, move);
 
                     if (Piece.RangeLimited[piece.Type]) break;
 

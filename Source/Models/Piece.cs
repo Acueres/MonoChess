@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace MonoChess
+namespace MonoChess.Models
 {
     public struct Piece
     {
