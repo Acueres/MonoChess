@@ -9,13 +9,7 @@ namespace MonoChess.Models
     {
         public Piece Piece { get; set; }
         public Position Position { get; set; }
-        public bool IsNull
-        {
-            get
-            {
-                return Piece.IsNull;
-            }
-        }
+        public bool IsNull { get => Piece.IsNull;  }
 
         public Move(Piece piece, Position position)
         {

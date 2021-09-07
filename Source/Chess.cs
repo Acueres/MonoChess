@@ -91,32 +91,31 @@ namespace MonoChess
             MouseState ms = Mouse.GetState();
             var size = (int)(graphics.PreferredBackBufferWidth / 8f);
 
+            //Draw tiles
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
                 {
-                    Position pos = new(x, y);
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
                     //shows coordinates for debugging
                     spriteBatch.DrawString(font, x + " " + y, new Vector2(x * size, y * size), Color.Red);
-
-                    if (!board[pos].IsNull)
-                    {
-                        if (!player.DraggedPiece.IsNull && board[pos] == player.DraggedPiece)
-                        {
-                            continue;
-                        }
-
-                        rect.Height = (int)(rect.Height * 0.8f);
-                        rect.Width = (int)(rect.Width * 0.7f);
-                        rect.Y += (int)(rect.Height * 0.2f);
-                        rect.X += (int)(rect.Width * 0.2f);
-
-                        spriteBatch.Draw(textures[board[pos].Name], rect, Color.White);
-                    }
                 }
+            }
+
+            //Draw pieces
+            foreach (var piece in board.GetPieces())
+            {
+                if (!player.DraggedPiece.IsNull && piece == player.DraggedPiece)
+                {
+                    continue;
+                }
+
+                rect = new((int)(piece.Position.X * size + size * 0.2f), (int)(piece.Position.Y * size + size * 0.2f),
+                    (int)(size * 0.7f), (int)(size * 0.8f));
+
+                spriteBatch.Draw(textures[piece.Name], rect, Color.White);
             }
 
             //Draw dragged piece at cursor's position

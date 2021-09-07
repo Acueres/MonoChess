@@ -10,7 +10,7 @@ namespace MonoChess
 {
     public class Board
     {
-        readonly Piece[,] board = new Piece[8, 8];
+        readonly Dictionary<Position, Piece> board = new();
 
         public Board()
         {
@@ -19,7 +19,8 @@ namespace MonoChess
 
         public Piece this[Position pos]
         {
-            get => board[pos.X, pos.Y];
+            get => board.ContainsKey(pos) ? board[pos] : new Piece();
+            set => board.Add(pos, value);
         }
 
         public void MakeMove(Move move)
@@ -29,24 +30,39 @@ namespace MonoChess
 
         public void MakeMove(Piece piece, Position pos)
         {
-            var oldPos = piece.Position;
+            if (board.ContainsKey(piece.Position))
+            {
+                board.Remove(piece.Position);
+            }
+
             piece.Position = pos;
 
-            board[pos.X, pos.Y] = piece;
-            board[oldPos.X, oldPos.Y] = new Piece();
+            if (board.ContainsKey(pos))
+            {
+                board[pos] = piece;
+            }
+            else
+            {
+                board.Add(pos, piece);
+            }
         }
 
         public IEnumerable<Piece> GetPieces(Sides side)
         {
-            for (int x = 0; x < board.GetLength(0); x++)
+            foreach (var piece in board.Values)
             {
-                for (int y = 0; y < board.GetLength(1); y++)
+                if (piece.Side == side)
                 {
-                    if (board[x, y].Side == side)
-                    {
-                        yield return board[x, y];
-                    }
+                    yield return piece;
                 }
+            }
+        }
+
+        public IEnumerable<Piece> GetPieces()
+        {
+            foreach (var piece in board.Values)
+            {
+                yield return piece;
             }
         }
 
@@ -60,26 +76,26 @@ namespace MonoChess
 
                 while (move.X >= 0 && move.X <= 7 && move.Y >= 0 && move.Y <= 7)
                 {
-                    if (!board[move.X, move.Y].IsNull)
+                    if (board.ContainsKey(move))
                     {
                         if (piece.Type == Pieces.Pawn && direction.Straight)
                         {
                             break; //prevent pawn straight attack
                         }
 
-                        if (board[move.X, move.Y].Side != piece.Side)
+                        if (board[move].Side != piece.Side)
                         {
                             yield return new Move(piece, move);
                         }
                         break; //path blocked
                     }
 
-                        if (piece.Type == Pieces.Pawn && !direction.Straight)
-                        {
-                            break; //prevent pawn lateral movement
-                        }
+                    if (piece.Type == Pieces.Pawn && !direction.Straight)
+                    {
+                        break; //prevent pawn lateral movement
+                    }
 
-                        yield return new Move(piece, move);
+                    yield return new Move(piece, move);
 
                     if (Piece.RangeLimited[piece.Type]) break;
 
@@ -108,7 +124,8 @@ namespace MonoChess
 
                 for (int x = 0; x < 8; x++)
                 {
-                    board[x, y] = new Piece(arrangementOrder[x], side, new Position(x, y));
+                    var pos = new Position(x, y);
+                    board.Add(pos, new Piece(arrangementOrder[x], side, pos));
                 }
 
                 if (side == Sides.Black)
@@ -122,7 +139,8 @@ namespace MonoChess
 
                 for (int x = 0; x < 8; x++)
                 {
-                    board[x, y] = new Piece(Pieces.Pawn, side, new Position(x, y));
+                    var pos = new Position(x, y);
+                    board.Add(pos, new Piece(Pieces.Pawn, side, pos));
                 }
             }
         }

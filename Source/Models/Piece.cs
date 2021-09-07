@@ -9,14 +9,8 @@ namespace MonoChess.Models
         public Pieces Type { get; set; }
         public Sides Side { get; set; }
         public Position Position { get; set; }
-        public string Name { get; set; }
-        public bool IsNull
-        {
-            get
-            {
-                return Type == Pieces.Null;
-            }
-        }
+        public string Name { get => Names[HashCode.Combine(Type, Side)]; }
+        public bool IsNull { get => Type == Pieces.Null; }
 
         public static Dictionary<Pieces, Position[]> Directions { get; set; } = new();
         public static Dictionary<Pieces, bool> RangeLimited { get; set; } = new()
@@ -28,13 +22,13 @@ namespace MonoChess.Models
             [Pieces.Rook] = false,
             [Pieces.Queen] = false
         };
+        static Dictionary<int, string> Names { get; set; } = new();
 
         public Piece(Pieces type, Sides side, Position position)
         {
             Type = type;
             Side = side;
             Position = position;
-            Name = (Side == Sides.White ? "w" : "b") + "_" + Type.ToString().ToLower();
         }
 
         static Piece()
@@ -56,6 +50,15 @@ namespace MonoChess.Models
             Directions.Add(Pieces.Rook, principal);
             Directions.Add(Pieces.Bishop, diagonal);
             Directions.Add(Pieces.Knight, knightMoves);
+
+            foreach (var side in new Sides[] {Sides.White, Sides.Black })
+            {
+                foreach (var type in Enum.GetValues(typeof(Pieces)).Cast<Pieces>())
+                {
+                    if (type == Pieces.Null) continue;
+                    Names.Add(HashCode.Combine(type, side), (side == Sides.White ? "w" : "b") + "_" + type.ToString().ToLower());
+                }
+            }
         }
 
         public static bool operator ==(Piece p1, Piece p2)
@@ -72,6 +75,11 @@ namespace MonoChess.Models
         public override string ToString()
         {
             return $"{Type}, {Side}, {Position}";
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Type, Side, Position);
         }
     }
 }
