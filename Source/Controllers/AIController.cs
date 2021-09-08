@@ -5,35 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MonoChess.Models;
+using MonoChess.Algorithms;
 
 
 namespace MonoChess.Controllers
 {
-    class AIController
+    class AIController : IController
     {
         readonly Board board;
-        readonly Random rnd = new();
-        readonly List<Move> possibleMoves = new(1000);
+        IAlgorithm algorithm;
 
         public AIController(Board board)
         {
             this.board = board;
+            algorithm = new Negamax();
         }
 
         public Move NextMove(Sides side)
         {
-            possibleMoves.Clear();
-
-            foreach (var piece in board.GetPieces(side))
-            {
-                foreach (var move in board.GenerateMoves(piece))
-                {
-                    possibleMoves.Add(move);
-                }
-            }
-
-            int index = rnd.Next(0, possibleMoves.Count() - 1);
-            return possibleMoves[index];
+            return algorithm.CalculateMove(side, board);
         }
     }
 }

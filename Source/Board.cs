@@ -10,11 +10,17 @@ namespace MonoChess
 {
     public class Board
     {
+        public Dictionary<Position, Piece> Copy { get => new(board); }
         readonly Dictionary<Position, Piece> board = new();
 
         public Board()
         {
             SetInitialPlacement();
+        }
+
+        public Board(Board board)
+        {
+            this.board = board.Copy;
         }
 
         public Piece this[Position pos]
@@ -28,28 +34,60 @@ namespace MonoChess
             MakeMove(move.Piece, move.Position);
         }
 
-        public void MakeMove(Piece piece, Position pos)
+        public void MakeMove(Move move, out Piece removed)
         {
-            if (board.ContainsKey(piece.Position))
+            removed = MakeMove(move.Piece, move.Position);
+        }
+
+        public void ReverseMove(Move move, Piece removedPiece)
+        {
+            if (!removedPiece.IsNull)
             {
-                board.Remove(piece.Position);
+                board[move.Position] = removedPiece;
             }
+            else
+            {
+                board.Remove(move.Position);
+            }
+
+            board.Add(move.Piece.Position, move.Piece);
+        }
+
+        public Piece MakeMove(Piece piece, Position pos)
+        {
+            Piece removed = new() { Position = pos };
+
+            board.Remove(piece.Position);
 
             piece.Position = pos;
 
             if (board.ContainsKey(pos))
             {
+                removed = board[pos];
                 board[pos] = piece;
             }
             else
             {
                 board.Add(pos, piece);
             }
+
+            return removed;
+        }
+
+        public int GetScore(Sides side)
+        {
+            int res = 0;
+            foreach (var piece in board.Values)
+            {
+                res += Piece.Scores[piece.Type] * (piece.Side == side ? 1 : -1);
+            }
+
+            return res;
         }
 
         public IEnumerable<Piece> GetPieces(Sides side)
         {
-            foreach (var piece in board.Values)
+            foreach (var piece in board.Values.ToArray())
             {
                 if (piece.Side == side)
                 {
@@ -66,6 +104,17 @@ namespace MonoChess
             }
         }
 
+        public IEnumerable<Move> GenerateMoves(Sides side)
+        {
+            foreach (var piece in GetPieces(side))
+            {
+                foreach (var move in GenerateMoves(piece))
+                {
+                    yield return move;
+                }
+            }
+        }
+
         public IEnumerable<Move> GenerateMoves(Piece piece)
         {
             foreach (var dir in Piece.Directions[piece.Type])
@@ -78,7 +127,7 @@ namespace MonoChess
                 {
                     if (board.ContainsKey(move))
                     {
-                        if (piece.Type == Pieces.Pawn && direction.Straight)
+                        if (piece.Type == Pieces.Pawn && direction.Orthogonal)
                         {
                             break; //prevent pawn straight attack
                         }
@@ -90,7 +139,7 @@ namespace MonoChess
                         break; //path blocked
                     }
 
-                    if (piece.Type == Pieces.Pawn && !direction.Straight)
+                    if (piece.Type == Pieces.Pawn && !direction.Orthogonal)
                     {
                         break; //prevent pawn lateral movement
                     }

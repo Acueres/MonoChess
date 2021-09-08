@@ -67,21 +67,13 @@ namespace MonoChess
 
         public void Update()
         {
-            if (turn == Sides.Black)
-            {
-                Move move = ai.NextMove(Sides.Black);
-                board.MakeMove(move);
-                turn = Sides.White;
-            }
-            else
-            {
-                Move move = player.NextMove(Sides.White);
+            IController current = turn == Sides.Black ? ai : player;
+            Move move = current.NextMove(turn);
 
-                if (!move.IsNull)
-                {
-                    board.MakeMove(move);
-                    turn = Sides.Black;
-                }
+            if (!move.IsNull)
+            {
+                board.MakeMove(move);
+                turn = turn == Sides.White ? Sides.Black : Sides.White;
             }
         }
 

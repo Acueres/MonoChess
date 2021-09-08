@@ -12,8 +12,8 @@ namespace MonoChess.Models
         public string Name { get => Names[HashCode.Combine(Type, Side)]; }
         public bool IsNull { get => Type == Pieces.Null; }
 
-        public static Dictionary<Pieces, Position[]> Directions { get; set; } = new();
-        public static Dictionary<Pieces, bool> RangeLimited { get; set; } = new()
+        public static Dictionary<Pieces, Position[]> Directions { get; } = new();
+        public static Dictionary<Pieces, bool> RangeLimited { get; } = new()
         {
             [Pieces.Pawn] = true,
             [Pieces.Knight] = true,
@@ -22,7 +22,16 @@ namespace MonoChess.Models
             [Pieces.Rook] = false,
             [Pieces.Queen] = false
         };
-        static Dictionary<int, string> Names { get; set; } = new();
+        public static Dictionary<Pieces, int> Scores { get; } = new()
+        {
+            [Pieces.Pawn] = 1,
+            [Pieces.Knight] = 3,
+            [Pieces.Bishop] = 3,
+            [Pieces.Rook] = 5,
+            [Pieces.Queen] = 9,
+            [Pieces.King] = (int)1e3
+        };
+        static Dictionary<int, string> Names { get; } = new();
 
         public Piece(Pieces type, Sides side, Position position)
         {
@@ -33,9 +42,9 @@ namespace MonoChess.Models
 
         static Piece()
         {
-            var principal = new Position[] { new(0, 1), new(0, -1), new(1, 0), new(-1, 0) };
+            var orthogonal = new Position[] { new(0, 1), new(0, -1), new(1, 0), new(-1, 0) };
             var diagonal = new Position[] { new(1, 1), new(-1, -1), new(1, 1), new(-1, 1), new(1, -1) };
-            var omnidirectional = principal.Concat(diagonal).ToArray();
+            var omnidirectional = orthogonal.Concat(diagonal).ToArray();
             var knightMoves = new Position[]
             {
                 new(-1, 2), new(1, 2),
@@ -47,7 +56,7 @@ namespace MonoChess.Models
             Directions.Add(Pieces.Pawn, new Position[] { new(0, 1), new(1, 1), new(-1, 1) });
             Directions.Add(Pieces.King, omnidirectional);
             Directions.Add(Pieces.Queen, omnidirectional);
-            Directions.Add(Pieces.Rook, principal);
+            Directions.Add(Pieces.Rook, orthogonal);
             Directions.Add(Pieces.Bishop, diagonal);
             Directions.Add(Pieces.Knight, knightMoves);
 
@@ -65,7 +74,6 @@ namespace MonoChess.Models
         {
             return p1.Type == p2.Type && p1.Side == p2.Side && p1.Position == p2.Position;
         }
-
 
         public static bool operator !=(Piece p1, Piece p2)
         {

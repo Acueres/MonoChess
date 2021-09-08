@@ -6,13 +6,12 @@ using MonoChess.Models;
 
 namespace MonoChess.Controllers
 {
-    class PlayerController
+    class PlayerController : IController
     {
         public Piece DraggedPiece { get; set; }
         public List<Position> AllowedMoves { get; private set; } = new();
 
         readonly Board board;
-
 
         public PlayerController(Board board)
         {

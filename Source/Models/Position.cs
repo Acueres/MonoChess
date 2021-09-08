@@ -7,8 +7,7 @@ namespace MonoChess.Models
         public int X { get; set; } //rank
         public int Y { get; set; } //file
 
-        public bool Straight { get => Math.Abs(X) + Math.Abs(Y) == 1; }
-
+        public bool Orthogonal { get => Math.Abs(X) + Math.Abs(Y) == 1; }
 
         public Position(int x, int y)
         {
