@@ -18,7 +18,7 @@ namespace MonoChess.Controllers
             this.board = board;
         }
 
-        public Move NextMove(Sides side)
+        public Move NextMove(Sides side, ChessState state)
         {
             MouseState ms = Mouse.GetState();
             var pos = GetCursorPosition(ms.X, ms.Y, Chess.ScreenWidth);

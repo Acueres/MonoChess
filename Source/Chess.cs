@@ -12,6 +12,14 @@ using MonoChess.Models;
 
 namespace MonoChess
 {
+    public enum ChessState
+    {
+        Opening,
+        Running,
+        Check,
+        Stalemate
+    }
+
     public class Chess
     {
         public static int ScreenWidth { get; set; }
@@ -28,7 +36,10 @@ namespace MonoChess
         PlayerController player;
         Board board = new();
 
-        Sides turn = Sides.White;
+        Sides turn;
+        Sides playerSide;
+
+        ChessState state;
 
         public Chess(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, SpriteFont font)
         {
@@ -63,17 +74,21 @@ namespace MonoChess
                 data[i] = Color.Gold;
             }
             goldTile.SetData(data);
+
+            Console.Write("Choose side, white (0) or black (1): ");
+            playerSide = (Sides)Convert.ToInt32(Console.ReadLine());
         }
 
         public void Update()
         {
-            IController current = turn == Sides.Black ? ai : player;
-            Move move = current.NextMove(turn);
+            IController current = turn == playerSide ? player : ai;
+            Move move = current.NextMove(turn, state);
 
             if (!move.IsNull)
             {
                 board.MakeMove(move);
                 turn = turn == Sides.White ? Sides.Black : Sides.White;
+                state = ChessState.Running;
             }
         }
 
@@ -127,6 +142,8 @@ namespace MonoChess
                     spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
                 }
             }
+
+            Console.Write($"\rStatus: {state}");
         }
     }
 }

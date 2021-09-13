@@ -9,8 +9,13 @@ namespace MonoChess.Algorithms
     {
         Board board;
 
-        public Move CalculateMove(Sides side, Board board)
+        public Move CalculateMove(Sides side, ChessState state, Board board)
         {
+            if (state == ChessState.Opening)
+            {
+                return new Move(board[new(4, 6)], new(4, 4));
+            }
+
             Move bestMove = new();
             this.board = new(board);
             int max = -int.MaxValue;

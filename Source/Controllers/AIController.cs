@@ -18,12 +18,12 @@ namespace MonoChess.Controllers
         public AIController(Board board)
         {
             this.board = board;
-            algorithm = new Negamax();
+            algorithm = new Randomized();
         }
 
-        public Move NextMove(Sides side)
+        public Move NextMove(Sides side, ChessState state)
         {
-            return algorithm.CalculateMove(side, board);
+            return algorithm.CalculateMove(side, state, board);
         }
     }
 }

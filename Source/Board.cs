@@ -146,7 +146,18 @@ namespace MonoChess
 
                     yield return new Move(piece, move);
 
-                    if (Piece.RangeLimited[piece.Type]) break;
+                    if (Piece.RangeLimited[piece.Type])
+                    {
+                        //allow pawn to move two tiles from initial rank
+                        if (piece.Type == Pieces.Pawn && !board.ContainsKey(move - direction) &&
+                            ((piece.Side == Sides.White && piece.Position.Y == 6)) ||
+                            (piece.Side == Sides.Black && piece.Position.Y == 1))
+                        {
+                            move -= direction;
+                            yield return new Move(piece, move);
+                        }
+                        break;
+                    }
 
                     move -= direction;
                 }
@@ -160,8 +171,8 @@ namespace MonoChess
                 Pieces.Rook,
                 Pieces.Knight,
                 Pieces.Bishop,
-                Pieces.King,
                 Pieces.Queen,
+                Pieces.King,
                 Pieces.Bishop,
                 Pieces.Knight,
                 Pieces.Rook
