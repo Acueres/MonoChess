@@ -32,6 +32,8 @@ namespace MonoChess
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        public static int ScreenWidth { get; private set; }
+
         Chess chess;
 
         public MainGame()
@@ -54,6 +56,8 @@ namespace MonoChess
             graphics.PreferredBackBufferWidth = 504;
             graphics.PreferredBackBufferHeight = 504;
             graphics.ApplyChanges();
+
+            ScreenWidth = (int)(graphics.PreferredBackBufferWidth / 8f);
 
             var fontBakeResult = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"), 25, 1024, 1024,
                 new[]

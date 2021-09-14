@@ -22,8 +22,6 @@ namespace MonoChess
 
     public class Chess
     {
-        public static int ScreenWidth { get; set; }
-
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D whiteTile;
@@ -47,8 +45,6 @@ namespace MonoChess
             this.spriteBatch = spriteBatch;
             this.textures = textures;
             this.font = font;
-
-            ScreenWidth = (int)(graphics.PreferredBackBufferWidth / 8f);
 
             ai = new(board);
             player = new(board);
@@ -81,14 +77,28 @@ namespace MonoChess
 
         public void Update()
         {
+            if (state == ChessState.Check && board.DetectCheckmate(turn))
+            {
+                throw new Exception("Checkmate");
+            }
+
             IController current = turn == playerSide ? player : ai;
             Move move = current.NextMove(turn, state);
 
             if (!move.IsNull)
             {
                 board.MakeMove(move);
+
                 turn = turn == Sides.White ? Sides.Black : Sides.White;
-                state = ChessState.Running;
+
+                if (board.DetectCheck(turn))
+                {
+                    state = ChessState.Check;
+                }
+                else
+                {
+                    state = ChessState.Running;
+                }
             }
         }
 
@@ -137,8 +147,8 @@ namespace MonoChess
                 rect = new(0, 0, size, size);
                 foreach (var move in player.AllowedMoves)
                 {
-                    rect.X = move.X * size;
-                    rect.Y = move.Y * size;
+                    rect.X = move.Position.X * size;
+                    rect.Y = move.Position.Y * size;
                     spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
                 }
             }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using MonoChess.Models;
@@ -9,7 +10,7 @@ namespace MonoChess.Controllers
     class PlayerController : IController
     {
         public Piece DraggedPiece { get; set; }
-        public List<Position> AllowedMoves { get; private set; } = new();
+        public List<Move> AllowedMoves { get; private set; } = new();
 
         readonly Board board;
 
@@ -21,7 +22,7 @@ namespace MonoChess.Controllers
         public Move NextMove(Sides side, ChessState state)
         {
             MouseState ms = Mouse.GetState();
-            var pos = GetCursorPosition(ms.X, ms.Y, Chess.ScreenWidth);
+            var pos = GetCursorPosition(ms.X, ms.Y, MainGame.ScreenWidth);
             pos.X = Math.Clamp(pos.X, 0, 7);
             pos.Y = Math.Clamp(pos.Y, 0, 7);
 
@@ -32,13 +33,16 @@ namespace MonoChess.Controllers
                 DraggedPiece = board[pos]; //select a piece to move
                 foreach (var m in board.GenerateMoves(DraggedPiece))
                 {
-                    AllowedMoves.Add(m.Position);
+                    if (!board.DetectCheck(side, m))
+                    {
+                        AllowedMoves.Add(m);
+                    }
                 }
             }
 
             if (!DraggedPiece.IsNull && ms.LeftButton == ButtonState.Released)
             {
-                if ((board[pos].IsNull || board[pos].Side != DraggedPiece.Side) && AllowedMoves.Contains(pos))
+                if ((board[pos].IsNull || board[pos].Side != DraggedPiece.Side) && AllowedMoves.Any(m => m.Position == pos))
                 {
                     move = new Move(DraggedPiece, pos);
                 }

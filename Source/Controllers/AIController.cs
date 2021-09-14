@@ -18,7 +18,7 @@ namespace MonoChess.Controllers
         public AIController(Board board)
         {
             this.board = board;
-            algorithm = new Randomized();
+            algorithm = new Negamax();
         }
 
         public Move NextMove(Sides side, ChessState state)
