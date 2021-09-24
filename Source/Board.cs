@@ -11,13 +11,13 @@ namespace MonoChess
     public class Board
     {
         public Dictionary<Position, Piece> Copy { get => new(pieces); }
-        readonly Dictionary<Position, Piece> pieces = new();
+        Dictionary<Position, Piece> pieces = new();
+
+        public void Reset() => SetInitialPlacement();
 
         public Board()
         {
             SetInitialPlacement();
-            //ensuring the ai chooses more different types of pieces
-            pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
         }
 
         public Board(Board board)
@@ -27,7 +27,7 @@ namespace MonoChess
 
         public Piece this[Position pos]
         {
-            get => pieces.ContainsKey(pos) ? pieces[pos] : new Piece();
+            get => pieces.ContainsKey(pos) ? pieces[pos] : Piece.Null;
             set => pieces.Add(pos, value);
         }
 
@@ -81,7 +81,7 @@ namespace MonoChess
             int res = 0;
             foreach (var piece in pieces.Values)
             {
-                res += Piece.Scores[piece.Type] * (piece.Side == side ? 1 : -1);
+                res += piece.Score * (piece.Side == side ? 1 : -1);
             }
 
             return res;
@@ -119,7 +119,7 @@ namespace MonoChess
 
         public IEnumerable<Move> GenerateMoves(Piece piece)
         {
-            foreach (var dir in Piece.Directions[piece.Type])
+            foreach (var dir in piece.Directions)
             {
                 var direction = piece.Side == Sides.Black ? dir * -1 : dir;
 
@@ -148,7 +148,7 @@ namespace MonoChess
 
                     yield return new Move(piece, move);
 
-                    if (Piece.RangeLimited[piece.Type])
+                    if (piece.RangeLimited)
                     {
                         //allow pawn to move two tiles from initial rank
                         if (piece.Type == Pieces.Pawn && !pieces.ContainsKey(move - direction) &&
@@ -216,6 +216,8 @@ namespace MonoChess
 
         private void SetInitialPlacement()
         {
+            pieces.Clear();
+
             var arrangementOrder = new Pieces[]
             {
                 Pieces.Rook,
@@ -253,6 +255,9 @@ namespace MonoChess
                     pieces.Add(pos, new Piece(Pieces.Pawn, side, pos));
                 }
             }
+
+            //ensuring the ai chooses more different types of pieces
+            pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
         }
     }
 }

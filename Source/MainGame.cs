@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SpriteFontPlus;
+using FontStashSharp;
 
 
 namespace MonoChess
@@ -27,14 +27,23 @@ namespace MonoChess
         Black
     }
 
+    public enum GameState
+    {
+        Menu,
+        Running
+    }
+
     public class MainGame : Game
     {
+        public GameState State { get; set; }
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public static int ScreenWidth { get; private set; }
-
+        Menu menu;
         Chess chess;
+        GameParameters parameters = new();
+
 
         public MainGame()
         {
@@ -53,26 +62,22 @@ namespace MonoChess
 
         protected override void Initialize()
         {
-            graphics.PreferredBackBufferWidth = 504;
-            graphics.PreferredBackBufferHeight = 504;
+            graphics.PreferredBackBufferWidth = GameParameters.BOARD_WIDTH;
+            graphics.PreferredBackBufferHeight = GameParameters.BOARD_WIDTH + GameParameters.MENU_HEIGHT;
             graphics.ApplyChanges();
 
-            ScreenWidth = (int)(graphics.PreferredBackBufferWidth / 8f);
+            byte[] ttfData = File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf");
+            FontSystem fs = new();
+            fs.AddFont(ttfData);
 
-            var fontBakeResult = TtfFontBaker.Bake(File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf"), 25, 1024, 1024,
-                new[]
-                {
-                    CharacterRange.BasicLatin
-                }
-            );
-
-            SpriteFont font = fontBakeResult.CreateSpriteFont(GraphicsDevice);
+            var fonts = Enumerable.Range(12, 21).ToDictionary(x => x, x => fs.GetFont(x));
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             var textures = LoadTextures();
 
-            chess = new Chess(graphics, spriteBatch, textures, font);
+            menu = new Menu(this, GraphicsDevice, parameters, spriteBatch, textures, fonts);
+            chess = new Chess(GraphicsDevice, spriteBatch, parameters, textures, fonts[32]);
 
             base.Initialize();
         }
@@ -86,7 +91,21 @@ namespace MonoChess
         {
             if (IsActive)
             {
-                chess.Update();
+                if (State == GameState.Running)
+                {
+                    bool finished = chess.Update();
+
+                    if (finished)
+                    {
+                        State = GameState.Menu;
+                        menu.ToMain();
+                        chess.Reset();
+                    }
+                }
+                else
+                {
+                    menu.Update();
+                }
             }
 
             base.Update(gameTime);
@@ -98,7 +117,8 @@ namespace MonoChess
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-            chess.Draw();
+            chess.Draw(State);
+            menu.Draw();
 
             spriteBatch.End();
 
@@ -107,14 +127,14 @@ namespace MonoChess
 
         private Dictionary<string, Texture2D> LoadTextures()
         {
-            var paths = Directory.GetFiles("Assets/", ".").ToArray();
+            var paths = Directory.GetFiles("assets/pieces/", ".").ToArray();
             Dictionary<string, Texture2D> textures = new();
 
             foreach (var path in paths)
             {
-                var textureName = path.Split("/")[1].Split(".")[0];
+                var textureName = path.Split("/", 2)[^1].Split("/")[1].Split(".")[0];
 
-                textures.Add(textureName, Content.Load<Texture2D>(textureName));
+                textures.Add(textureName, Content.Load<Texture2D>("pieces/" + textureName));
             }
 
             return textures;
