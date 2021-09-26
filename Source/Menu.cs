@@ -15,6 +15,8 @@ namespace MonoChess
 {
     class Menu
     {
+        public void ToMain() => state = MenuState.Main;
+
         enum MenuState
         {
             Main,
@@ -25,17 +27,19 @@ namespace MonoChess
         SpriteBatch spriteBatch;
         List<IGUIElement> main;
         List<IGUIElement> setup;
+        List<IGUIElement> inGame;
         Label background;
 
-        public void ToMain() => state = MenuState.Main;
         MenuState state;
-
         MouseState previousMs = Mouse.GetState();
+        bool abandonGame;
 
 
         public Menu(MainGame game, GraphicsDevice graphics, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.spriteBatch = spriteBatch;
+
+            var buttonBase = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod);
 
             background = new Label()
             {
@@ -47,14 +51,36 @@ namespace MonoChess
 
             Button singlePlayer = new()
             {
-                Texture = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod),
-                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.MENU_HEIGHT / 4, 120, 30),
+                Texture = buttonBase,
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 120, GameParameters.MENU_HEIGHT / 4, 120, 30),
                 Text = "Single Player",
                 TextColor = Color.Black,
                 Font = fonts[22],
-                Action = () => { state = MenuState.Setup; }
+                Action = () => { parameters.SinglePlayer = true; state = MenuState.Setup; }
             };
             main.Add(singlePlayer);
+
+            Button twoPlayers = new()
+            {
+                Texture = buttonBase,
+                Rect = new(GameParameters.BOARD_WIDTH / 2 + 30, GameParameters.MENU_HEIGHT / 4, 120, 30),
+                Text = "Two Players",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () => { parameters.SinglePlayer = false; state = MenuState.InGame; game.State = GameState.Running; }
+            };
+            main.Add(twoPlayers);
+
+            Button quit = new()
+            {
+                Texture = buttonBase,
+                Rect = new(GameParameters.BOARD_WIDTH - 90, GameParameters.MENU_HEIGHT / 4, 60, 30),
+                Text = "Quit",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () => { game.Exit(); }
+            };
+            main.Add(quit);
 
             setup = new List<IGUIElement>();
 
@@ -70,7 +96,7 @@ namespace MonoChess
             Label sideBase = new()
             {
                 Rect = new(55, 30, 50, 50),
-                Texture = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod)
+                Texture = buttonBase
             };
             setup.Add(sideBase);
 
@@ -88,7 +114,7 @@ namespace MonoChess
 
             Button play = new()
             {
-                Texture = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod),
+                Texture = buttonBase,
                 Rect = new(GameParameters.BOARD_WIDTH / 2 + 80, GameParameters.MENU_HEIGHT / 2, 60, 30),
                 Text = "Play",
                 TextColor = Color.Black,
@@ -99,7 +125,7 @@ namespace MonoChess
 
             Button back = new()
             {
-                Texture = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod),
+                Texture = buttonBase,
                 Rect = new(GameParameters.BOARD_WIDTH - 80, GameParameters.MENU_HEIGHT / 2, 60, 30),
                 Text = "Back",
                 TextColor = Color.Black,
@@ -107,6 +133,18 @@ namespace MonoChess
                 Action = () => { state = MenuState.Main; }
             };
             setup.Add(back);
+
+            inGame = new List<IGUIElement>();
+            Button abandon = new()
+            {
+                Texture = buttonBase,
+                Rect = new(GameParameters.BOARD_WIDTH / 2 + 80, GameParameters.MENU_HEIGHT / 2, 150, 30),
+                Text = "Abandon game",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () => { abandonGame = true; }
+            };
+            inGame.Add(abandon);
         }
 
         public void Draw()
@@ -127,10 +165,19 @@ namespace MonoChess
                     el.Draw(spriteBatch);
                 }
             }
+            else
+            {
+                foreach (var el in inGame)
+                {
+                    el.Draw(spriteBatch);
+                }
+            }
         }
 
-        public void Update()
+        public bool Update()
         {
+            abandonGame = false;
+
             MouseState ms = Mouse.GetState();
             if (state == MenuState.Main)
             {
@@ -146,8 +193,17 @@ namespace MonoChess
                     el.Update(ms.Position, Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
                 }
             }
+            else
+            {
+                foreach (var el in inGame)
+                {
+                    el.Update(ms.Position, Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
+                }
+            }
 
             previousMs = ms;
+
+            return abandonGame;
         }
     }
 }

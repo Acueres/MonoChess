@@ -91,20 +91,19 @@ namespace MonoChess
         {
             if (IsActive)
             {
+                bool finished = false;
                 if (State == GameState.Running)
                 {
-                    bool finished = chess.Update();
-
-                    if (finished)
-                    {
-                        State = GameState.Menu;
-                        menu.ToMain();
-                        chess.Reset();
-                    }
+                    finished = chess.Update();
                 }
-                else
+
+                bool abandonGame = menu.Update();
+
+                if (finished || abandonGame)
                 {
-                    menu.Update();
+                    State = GameState.Menu;
+                    menu.ToMain();
+                    chess.Reset();
                 }
             }
 

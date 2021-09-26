@@ -6,5 +6,6 @@
         public const int MENU_HEIGHT = 80;
 
         public Sides Side { get; set; }
+        public bool SinglePlayer { get; set; }
     }
 }

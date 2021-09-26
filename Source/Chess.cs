@@ -57,7 +57,7 @@ namespace MonoChess
             whiteTile = Util.GetColoredTexture(graphics, 50, 50, Color.Beige);
             blackTile = Util.GetColoredTexture(graphics, 50, 50, Color.Olive);
             goldTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
-            shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f);
+            shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f); 
         }
 
         public void Reset()
@@ -79,7 +79,7 @@ namespace MonoChess
                 return true;
             }
 
-            IController controller = currentSide == playerSide ? player : ai;
+            IController controller = currentSide == playerSide || !parameters.SinglePlayer ? player : ai;
             Move move = controller.NextMove(currentSide, state);
 
             if (!move.IsNull)
