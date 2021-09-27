@@ -77,7 +77,7 @@ namespace MonoChess
             var textures = LoadTextures();
 
             menu = new Menu(this, GraphicsDevice, parameters, spriteBatch, textures, fonts);
-            chess = new Chess(GraphicsDevice, spriteBatch, parameters, textures, fonts[32]);
+            chess = new Chess(GraphicsDevice, spriteBatch, parameters, textures, fonts);
 
             base.Initialize();
         }

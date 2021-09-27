@@ -26,14 +26,16 @@ namespace MonoChess
         SpriteBatch spriteBatch;
         Texture2D whiteTile;
         Texture2D blackTile;
-        Texture2D goldTile;
+        Texture2D allowedTile;
+        Texture2D disallowedTile;
+        Texture2D selectedTile;
         Texture2D shading;
-        DynamicSpriteFont font;
+        Dictionary<int, DynamicSpriteFont> fonts;
         Dictionary<string, Texture2D> textures;
 
         GameParameters parameters;
-        AIController ai;
-        PlayerController player;
+        AIController aiController;
+        PlayerController playerController;
         Board board = new();
 
         int turnCount;
@@ -44,19 +46,21 @@ namespace MonoChess
         ChessState state;
 
         public Chess(GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
-            Dictionary<string, Texture2D> textures, DynamicSpriteFont font)
+            Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.spriteBatch = spriteBatch;
             this.parameters = parameters;
             this.textures = textures;
-            this.font = font;
+            this.fonts = fonts;
 
-            ai = new AIController(board);
-            player = new PlayerController(board);
+            aiController = new AIController(board);
+            playerController = new PlayerController(board);
 
-            whiteTile = Util.GetColoredTexture(graphics, 50, 50, Color.Beige);
+            whiteTile = Util.GetColoredTexture(graphics, 50, 50, Color.LightGoldenrodYellow);
             blackTile = Util.GetColoredTexture(graphics, 50, 50, Color.Olive);
-            goldTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
+            allowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
+            disallowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Red);
+            selectedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Blue);
             shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f); 
         }
 
@@ -64,6 +68,7 @@ namespace MonoChess
         {
             turnCount = 0;
             currentSide = Sides.White;
+            playerController.SelectedPiece = Piece.Null;
             board.Reset();
         }
 
@@ -79,7 +84,7 @@ namespace MonoChess
                 return true;
             }
 
-            IController controller = currentSide == playerSide || !parameters.SinglePlayer ? player : ai;
+            IController controller = currentSide == playerSide || !parameters.SinglePlayer ? playerController : aiController;
             Move move = controller.NextMove(currentSide, state);
 
             if (!move.IsNull)
@@ -106,7 +111,6 @@ namespace MonoChess
         public void Draw(GameState gameState)
         {
             Rectangle rect;
-            MouseState ms = Mouse.GetState();
             var size = GameParameters.BOARD_WIDTH / 8;
 
             //Draw tiles
@@ -117,41 +121,37 @@ namespace MonoChess
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size + GameParameters.MENU_HEIGHT, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
-                    //shows coordinates for debugging
-                    spriteBatch.DrawString(font, x + " " + y, new Vector2(x * size, y * size + GameParameters.MENU_HEIGHT), Color.Red);
+                }
+            }
+
+            if (!playerController.SelectedPiece.IsNull)
+            {
+                spriteBatch.Draw(selectedTile, new Rectangle(playerController.SelectedPiece.Position.X * size,
+                    playerController.SelectedPiece.Position.Y * size + GameParameters.MENU_HEIGHT, size, size), Color.White * 0.5f);
+
+                rect = new(0, 0, size, size);
+                foreach (var move in playerController.AllowedMoves)
+                {
+                    rect.X = move.Position.X * size;
+                    rect.Y = move.Position.Y * size + GameParameters.MENU_HEIGHT;
+                    spriteBatch.Draw(allowedTile, rect, Color.White * 0.5f);
+                }
+
+                foreach (var move in playerController.DisallowedMoves)
+                {
+                    rect.X = move.Position.X * size;
+                    rect.Y = move.Position.Y * size + GameParameters.MENU_HEIGHT;
+                    spriteBatch.Draw(disallowedTile, rect, Color.White * 0.5f);
                 }
             }
 
             //Draw pieces
             foreach (var piece in board.GetPieces())
             {
-                if (!player.DraggedPiece.IsNull && piece == player.DraggedPiece)
-                {
-                    continue;
-                }
-
                 rect = new((int)(piece.Position.X * size + size * 0.2f), (int)(piece.Position.Y * size + size * 0.2f) + GameParameters.MENU_HEIGHT,
                     (int)(size * 0.7f), (int)(size * 0.8f));
 
                 spriteBatch.Draw(textures[piece.Name], rect, Color.White);
-            }
-
-            //Draw dragged piece at cursor's position
-            if (!player.DraggedPiece.IsNull)
-            {
-                rect = new(ms.X, ms.Y, (int)(size * 0.7f), (int)(size * 0.8f));
-                rect.X -= (int)(0.5f * rect.Width);
-                rect.Y -= (int)(0.5f * rect.Height);
-
-                spriteBatch.Draw(textures[player.DraggedPiece.Name], rect, Color.White);
-
-                rect = new(0, 0, size, size);
-                foreach (var move in player.AllowedMoves)
-                {
-                    rect.X = move.Position.X * size;
-                    rect.Y = move.Position.Y * size + GameParameters.MENU_HEIGHT;
-                    spriteBatch.Draw(goldTile, rect, Color.White * 0.5f);
-                }
             }
 
             if (gameState != GameState.Running)
