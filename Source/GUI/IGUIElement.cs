@@ -9,6 +9,6 @@ namespace MonoChess.GUI
     interface IGUIElement
     {
         public void Draw(SpriteBatch spriteBatch);
-        public virtual void Update(Point mouseLoc, bool click) { }
+        public virtual void Update(bool click) { }
     }
 }

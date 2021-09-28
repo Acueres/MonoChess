@@ -28,7 +28,6 @@ namespace MonoChess
         List<IGUIElement> main;
         List<IGUIElement> setup;
         List<IGUIElement> inGame;
-        Label background;
 
         MenuState state;
         MouseState previousMs = Mouse.GetState();
@@ -40,19 +39,23 @@ namespace MonoChess
             this.spriteBatch = spriteBatch;
 
             var buttonBase = Util.GetColoredTexture(graphics, 50, 50, Color.Goldenrod);
-
-            background = new Label()
-            {
-                Texture = Util.GetColoredTexture(graphics, 50, 50, Color.DarkRed),
-                Rect = new(0, 0, GameParameters.BOARD_WIDTH, GameParameters.MENU_HEIGHT)
-            };
+            Button.BaseTexture = buttonBase;
+            Button.Highlight = Util.GetColoredTexture(graphics, 50, 50, Color.White);
 
             main = new List<IGUIElement>();
 
+            Label chessLabel = new()
+            {
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 150, 120, 30),
+                Text = "Chess",
+                TextColor = Color.AntiqueWhite,
+                Font = fonts[32]
+            };
+            main.Add(chessLabel);
+
             Button singlePlayer = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH / 2 - 120, GameParameters.MENU_HEIGHT / 4, 120, 30),
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 100, 120, 30),
                 Text = "Single Player",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -62,8 +65,7 @@ namespace MonoChess
 
             Button twoPlayers = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH / 2 + 30, GameParameters.MENU_HEIGHT / 4, 120, 30),
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 60, 120, 30),
                 Text = "Two Players",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -73,9 +75,8 @@ namespace MonoChess
 
             Button quit = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH - 90, GameParameters.MENU_HEIGHT / 4, 60, 30),
-                Text = "Quit",
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2, 120, 30),
+                Text = "Quit Game",
                 TextColor = Color.Black,
                 Font = fonts[22],
                 Action = () => { game.Exit(); }
@@ -84,18 +85,28 @@ namespace MonoChess
 
             setup = new List<IGUIElement>();
 
+            Label setupLabel = new()
+            {
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 150, 120, 30),
+                Text = "Setup",
+                TextColor = Color.AntiqueWhite,
+                Font = fonts[32]
+            };
+            setup.Add(setupLabel);
+
             Label chooseSide = new()
             {
-                Rect = new(30, GameParameters.MENU_HEIGHT / 8, 100, 30),
-                Text = "Play as:",
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 100, 120, 30),
+                Text = "Play as",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[20]
+                Font = fonts[22]
             };
             setup.Add(chooseSide);
 
+            Rectangle sideRect = new(GameParameters.BOARD_WIDTH / 2 - 20, GameParameters.BOARD_WIDTH / 2 - 70, 40, 40);
             Label sideBase = new()
             {
-                Rect = new(55, 30, 50, 50),
+                Rect = sideRect,
                 Texture = buttonBase
             };
             setup.Add(sideBase);
@@ -103,7 +114,7 @@ namespace MonoChess
             Button side = new()
             {
                 Texture = textures["w_king"],
-                Rect = new(60, 35, 40, 40)
+                Rect = sideRect
             };
             side.Action = () =>
             {
@@ -114,8 +125,7 @@ namespace MonoChess
 
             Button play = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH / 2 + 80, GameParameters.MENU_HEIGHT / 2, 60, 30),
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 65, GameParameters.BOARD_WIDTH / 2 + 60, 60, 30),
                 Text = "Play",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -125,8 +135,7 @@ namespace MonoChess
 
             Button back = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH - 80, GameParameters.MENU_HEIGHT / 2, 60, 30),
+                Rect = new(GameParameters.BOARD_WIDTH / 2 + 5, GameParameters.BOARD_WIDTH / 2 + 60, 60, 30),
                 Text = "Back",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -135,22 +144,39 @@ namespace MonoChess
             setup.Add(back);
 
             inGame = new List<IGUIElement>();
+
+            Label pauseLabel = new()
+            {
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 150, 120, 30),
+                Text = "Pause",
+                TextColor = Color.AntiqueWhite,
+                Font = fonts[32]
+            };
+            inGame.Add(pauseLabel);
+
             Button abandon = new()
             {
-                Texture = buttonBase,
-                Rect = new(GameParameters.BOARD_WIDTH / 2 + 80, GameParameters.MENU_HEIGHT / 2, 150, 30),
-                Text = "Abandon game",
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2 - 60, 120, 30),
+                Text = "Leave match",
                 TextColor = Color.Black,
                 Font = fonts[22],
                 Action = () => { abandonGame = true; }
             };
             inGame.Add(abandon);
+
+            Button @return = new()
+            {
+                Rect = new(GameParameters.BOARD_WIDTH / 2 - 60, GameParameters.BOARD_WIDTH / 2, 120, 30),
+                Text = "Return",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () => { game.State = GameState.Running; }
+            };
+            inGame.Add(@return);
         }
 
-        public void Draw()
+        public void Draw(GameState gameState)
         {
-            background.Draw(spriteBatch);
-
             if (state == MenuState.Main)
             {
                 foreach (var el in main)
@@ -165,7 +191,7 @@ namespace MonoChess
                     el.Draw(spriteBatch);
                 }
             }
-            else
+            else if (state == MenuState.InGame && gameState == GameState.Pause)
             {
                 foreach (var el in inGame)
                 {
@@ -174,30 +200,31 @@ namespace MonoChess
             }
         }
 
-        public bool Update()
+        public bool Update(GameState gameState)
         {
             abandonGame = false;
 
             MouseState ms = Mouse.GetState();
+
             if (state == MenuState.Main)
             {
                 foreach (var el in main)
                 {
-                    el.Update(ms.Position, Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
+                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
                 }
             }
             else if (state == MenuState.Setup)
             {
                 foreach (var el in setup)
                 {
-                    el.Update(ms.Position, Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
+                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
                 }
             }
-            else
+            else if (state == MenuState.InGame && gameState == GameState.Pause)
             {
                 foreach (var el in inGame)
                 {
-                    el.Update(ms.Position, Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
+                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
                 }
             }
 

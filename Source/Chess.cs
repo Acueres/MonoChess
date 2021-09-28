@@ -119,7 +119,7 @@ namespace MonoChess
                 for (int y = 0; y < 8; y++)
                 {
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
-                    rect = new(x * size, y * size + GameParameters.MENU_HEIGHT, size, size);
+                    rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
                 }
             }
@@ -127,20 +127,20 @@ namespace MonoChess
             if (!playerController.SelectedPiece.IsNull)
             {
                 spriteBatch.Draw(selectedTile, new Rectangle(playerController.SelectedPiece.Position.X * size,
-                    playerController.SelectedPiece.Position.Y * size + GameParameters.MENU_HEIGHT, size, size), Color.White * 0.5f);
+                    playerController.SelectedPiece.Position.Y * size, size, size), Color.White * 0.5f);
 
                 rect = new(0, 0, size, size);
                 foreach (var move in playerController.AllowedMoves)
                 {
                     rect.X = move.Position.X * size;
-                    rect.Y = move.Position.Y * size + GameParameters.MENU_HEIGHT;
+                    rect.Y = move.Position.Y * size;
                     spriteBatch.Draw(allowedTile, rect, Color.White * 0.5f);
                 }
 
                 foreach (var move in playerController.DisallowedMoves)
                 {
                     rect.X = move.Position.X * size;
-                    rect.Y = move.Position.Y * size + GameParameters.MENU_HEIGHT;
+                    rect.Y = move.Position.Y * size;
                     spriteBatch.Draw(disallowedTile, rect, Color.White * 0.5f);
                 }
             }
@@ -148,7 +148,7 @@ namespace MonoChess
             //Draw pieces
             foreach (var piece in board.GetPieces())
             {
-                rect = new((int)(piece.Position.X * size + size * 0.2f), (int)(piece.Position.Y * size + size * 0.2f) + GameParameters.MENU_HEIGHT,
+                rect = new((int)(piece.Position.X * size + size * 0.2f), (int)(piece.Position.Y * size + size * 0.2f),
                     (int)(size * 0.7f), (int)(size * 0.8f));
 
                 spriteBatch.Draw(textures[piece.Name], rect, Color.White);
@@ -156,7 +156,7 @@ namespace MonoChess
 
             if (gameState != GameState.Running)
             {
-                spriteBatch.Draw(shading, new Rectangle(0, GameParameters.MENU_HEIGHT, GameParameters.BOARD_WIDTH, GameParameters.BOARD_WIDTH), Color.White);
+                spriteBatch.Draw(shading, new Rectangle(0, 0, GameParameters.BOARD_WIDTH, GameParameters.BOARD_WIDTH), Color.White);
             }
         }
     }

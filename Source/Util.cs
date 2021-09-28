@@ -29,5 +29,10 @@ namespace MonoChess
         {
             return currentState == ButtonState.Pressed && previousState == ButtonState.Released;
         }
+
+        public static bool KeyPressed(Keys key, KeyboardState currentState, KeyboardState previousState)
+        {
+            return currentState.IsKeyDown(key) && !previousState.IsKeyDown(key);
+        }
     }
 }

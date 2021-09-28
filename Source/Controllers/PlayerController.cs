@@ -29,9 +29,7 @@ namespace MonoChess.Controllers
         {
             MouseState ms = Mouse.GetState();
 
-            if (ms.Y < GameParameters.MENU_HEIGHT) return Move.Null; //prevent black piece selection when clicking on the menu
-
-            var mousePos = (new Position(ms.X, ms.Y - GameParameters.MENU_HEIGHT) / tileSize);
+            var mousePos = (new Position(ms.X, ms.Y) / tileSize);
 
             mousePos.X = Math.Clamp(mousePos.X, 0, 7);
             mousePos.Y = Math.Clamp(mousePos.Y, 0, 7);

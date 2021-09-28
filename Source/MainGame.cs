@@ -4,6 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
@@ -30,7 +31,8 @@ namespace MonoChess
     public enum GameState
     {
         Menu,
-        Running
+        Running,
+        Pause
     }
 
     public class MainGame : Game
@@ -43,6 +45,8 @@ namespace MonoChess
         Menu menu;
         Chess chess;
         GameParameters parameters = new();
+
+        KeyboardState prevKs = Keyboard.GetState();
 
 
         public MainGame()
@@ -63,7 +67,7 @@ namespace MonoChess
         protected override void Initialize()
         {
             graphics.PreferredBackBufferWidth = GameParameters.BOARD_WIDTH;
-            graphics.PreferredBackBufferHeight = GameParameters.BOARD_WIDTH + GameParameters.MENU_HEIGHT;
+            graphics.PreferredBackBufferHeight = GameParameters.BOARD_WIDTH;
             graphics.ApplyChanges();
 
             byte[] ttfData = File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf");
@@ -91,15 +95,15 @@ namespace MonoChess
         {
             if (IsActive)
             {
-                bool finished = false;
+                CheckInput();
+
+                bool finished = menu.Update(State);
                 if (State == GameState.Running)
                 {
                     finished = chess.Update();
                 }
 
-                bool abandonGame = menu.Update();
-
-                if (finished || abandonGame)
+                if (finished)
                 {
                     State = GameState.Menu;
                     menu.ToMain();
@@ -117,7 +121,7 @@ namespace MonoChess
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
             chess.Draw(State);
-            menu.Draw();
+            menu.Draw(State);
 
             spriteBatch.End();
 
@@ -137,6 +141,25 @@ namespace MonoChess
             }
 
             return textures;
+        }
+
+        private void CheckInput()
+        {
+            var ks = Keyboard.GetState();
+
+            if (Util.KeyPressed(Keys.Escape, ks, prevKs))
+            {
+                if (State == GameState.Running)
+                {
+                    State = GameState.Pause;
+                }
+                else if (State == GameState.Pause)
+                {
+                    State = GameState.Running;
+                }
+            }
+
+            prevKs = ks;
         }
     }
 }
