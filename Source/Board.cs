@@ -10,8 +10,8 @@ namespace MonoChess
 {
     public class Board
     {
-        public Dictionary<Position, Piece> Copy { get => new(pieces); }
         Dictionary<Position, Piece> pieces = new();
+        readonly bool[] castlingPossible = new bool[2] { true, true };
 
         public void Reset() => SetInitialPlacement();
 
@@ -22,7 +22,8 @@ namespace MonoChess
 
         public Board(Board board)
         {
-            pieces = board.Copy;
+            pieces = new(board.pieces);
+            Array.Copy(castlingPossible, board.castlingPossible, 2);
         }
 
         public Piece this[Position pos]
@@ -31,28 +32,66 @@ namespace MonoChess
             set => pieces.Add(pos, value);
         }
 
-        public void MakeMove(Move move)
-        {
-            MakeMove(move.Piece, move.Position);
-        }
-
         public void MakeMove(Move move, out Piece removed)
         {
-            removed = MakeMove(move.Piece, move.Position);
+            if (move.CastlingCondition(this[move.TargetPosition]))
+            {
+                removed = CastlingMove(move.TargetPosition, move.Piece.Side);
+            }
+            else
+            {
+                removed = MakeMove(move.Piece, move.TargetPosition);
+            }
         }
 
         public void ReverseMove(Move move, Piece removedPiece)
         {
+            if (move.CastlingCondition(removedPiece))
+            {
+                ReverseCastlingMove(move.TargetPosition, move.Piece.Side);
+                return;
+            }
+
             if (!removedPiece.IsNull)
             {
-                pieces[move.Position] = removedPiece;
+                pieces[move.TargetPosition] = removedPiece;
             }
             else
             {
-                pieces.Remove(move.Position);
+                pieces.Remove(move.TargetPosition);
             }
 
             pieces.Add(move.Piece.Position, move.Piece);
+        }
+
+        private void ReverseCastlingMove(Position rookPos, Sides side)
+        {
+            Position oldRookPos;
+            Position oldKingPos;
+
+            Position kingPos = side == Sides.White ? new(4, 7) : new(4, 0);
+
+            int rank = rookPos.X;
+            int file = rookPos.Y;
+
+            if (rank == 0)
+            {
+                oldRookPos = new(3, file);
+                oldKingPos = new(2, file);
+            }
+            else
+            {
+                oldRookPos = new(5, file);
+                oldKingPos = new(6, file);
+            }
+
+            pieces.Remove(oldKingPos);
+            pieces.Remove(oldRookPos);
+
+            pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
+            pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
+
+            castlingPossible[(int)side] = true;
         }
 
         public Piece MakeMove(Piece piece, Position pos)
@@ -74,6 +113,40 @@ namespace MonoChess
             }
 
             return removed;
+        }
+
+        private Piece CastlingMove(Position oldRookPos, Sides side)
+        {
+            Piece rook = this[oldRookPos];
+
+            Position rookPos;
+            Position kingPos;
+
+            Position oldKingPos = side == Sides.White ? new(4, 7) : new(4, 0);
+
+            int rank = oldRookPos.X;
+            int file = oldRookPos.Y;
+
+            if (rank == 0)
+            {
+                rookPos = new(3, file);
+                kingPos = new(2, file);
+            }
+            else
+            {
+                rookPos = new(5, file);
+                kingPos = new(6, file);
+            }
+
+            pieces.Remove(oldKingPos);
+            pieces.Remove(oldRookPos);
+
+            pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
+            pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
+
+            castlingPossible[(int)side] = false;
+
+            return rook;
         }
 
         public int GetScore(Sides side)
@@ -164,6 +237,65 @@ namespace MonoChess
                     move -= direction;
                 }
             }
+
+            if (piece.Type == Pieces.King && castlingPossible[(int)piece.Side])
+            {
+                foreach (var castlingMove in GenerateCastlingMoves(piece))
+                {
+                    yield return castlingMove;
+                }
+            }
+        }
+
+        private IEnumerable<Move> GenerateCastlingMoves(Piece piece)
+        {
+            Position kingOrigin = piece.Side == Sides.White ? new(4, 7) : new(4, 0);
+            Position rook1Origin = piece.Side == Sides.White ? new(0, 7) : new(0, 0);
+            Position rook2Origin = piece.Side == Sides.White ? new(7, 7) : new(7, 0);
+
+            if (piece.Position == kingOrigin
+                && this[rook1Origin].Type == Pieces.Rook
+                && this[rook1Origin].Side == piece.Side)
+            {
+                Position direction = new(-1, 0);
+
+                bool pathBlocked = false;
+                for (int i = 1; i <= 3; i++)
+                {
+                    if (!this[kingOrigin + direction * i].IsNull)
+                    {
+                        pathBlocked = true;
+                        break;
+                    }
+                }
+
+                if (!pathBlocked)
+                {
+                    yield return new Move(piece, rook1Origin);
+                }
+            }
+
+            if (piece.Position == kingOrigin
+                && this[rook2Origin].Type == Pieces.Rook
+                && this[rook2Origin].Side == piece.Side)
+            {
+                Position direction = new(1, 0);
+
+                bool pathBlocked = false;
+                for (int i = 1; i <= 2; i++)
+                {
+                    if (!this[kingOrigin + direction * i].IsNull)
+                    {
+                        pathBlocked = true;
+                        break;
+                    }
+                }
+
+                if (!pathBlocked)
+                {
+                    yield return new Move(piece, rook2Origin);
+                }
+            }
         }
 
         public bool DetectCheck(Sides side)
@@ -173,7 +305,7 @@ namespace MonoChess
 
             foreach (var oppositeMove in GenerateMoves(oppositeSide))
             {
-                if (oppositeMove.Position == king.Position)
+                if (oppositeMove.TargetPosition == king.Position)
                 {
                     return true;
                 }
@@ -190,7 +322,7 @@ namespace MonoChess
 
             foreach (var oppositeMove in GenerateMoves(oppositeSide))
             {
-                if (oppositeMove.Position == king.Position)
+                if (oppositeMove.TargetPosition == king.Position)
                 {
                     ReverseMove(move, removed);
                     return true;

@@ -89,7 +89,7 @@ namespace MonoChess
 
             if (!move.IsNull)
             {
-                board.MakeMove(move);
+                board.MakeMove(move, out _);
 
                 currentSide = currentSide == Sides.White ? Sides.Black : Sides.White;
 
@@ -121,6 +121,11 @@ namespace MonoChess
                     Texture2D tile = (x + y) % 2 == 0 ? whiteTile : blackTile;
                     rect = new(x * size, y * size, size, size);
                     spriteBatch.Draw(tile, rect, Color.White);
+
+                    if (parameters.ShowGrid)
+                    {
+                        spriteBatch.DrawString(fonts[22], x + " " + y, new Vector2(x * size, y * size), Color.Red);
+                    }
                 }
             }
 
@@ -132,15 +137,15 @@ namespace MonoChess
                 rect = new(0, 0, size, size);
                 foreach (var move in playerController.AllowedMoves)
                 {
-                    rect.X = move.Position.X * size;
-                    rect.Y = move.Position.Y * size;
+                    rect.X = move.TargetPosition.X * size;
+                    rect.Y = move.TargetPosition.Y * size;
                     spriteBatch.Draw(allowedTile, rect, Color.White * 0.5f);
                 }
 
                 foreach (var move in playerController.DisallowedMoves)
                 {
-                    rect.X = move.Position.X * size;
-                    rect.Y = move.Position.Y * size;
+                    rect.X = move.TargetPosition.X * size;
+                    rect.Y = move.TargetPosition.Y * size;
                     spriteBatch.Draw(disallowedTile, rect, Color.White * 0.5f);
                 }
             }

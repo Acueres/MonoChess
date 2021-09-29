@@ -1,7 +1,8 @@
-﻿using MonoChess.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+﻿using System;
+using System.Diagnostics;
+
+using MonoChess.Models;
+
 
 namespace MonoChess.Algorithms
 {
@@ -25,6 +26,7 @@ namespace MonoChess.Algorithms
                 this.board.MakeMove(move, out var removed);
                 int score = -NegaMax(2, side);
                 this.board.ReverseMove(move, removed);
+               
                 if (score > max)
                 {
                     max = score;
@@ -50,6 +52,7 @@ namespace MonoChess.Algorithms
                 board.MakeMove(move, out var removed);
                 int score = -NegaMax(depth - 1, side);
                 board.ReverseMove(move, removed);
+
                 if (score > max)
                 {
                     max = score;

@@ -6,5 +6,6 @@
 
         public Sides Side { get; set; }
         public bool SinglePlayer { get; set; }
+        public bool ShowGrid { get; set; }
     }
 }

@@ -159,6 +159,11 @@ namespace MonoChess
                 }
             }
 
+            else if (Util.KeyPressed(Keys.G, ks, prevKs))
+            {
+                parameters.ShowGrid ^= true;
+            }
+
             prevKs = ks;
         }
     }

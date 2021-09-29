@@ -14,7 +14,7 @@ namespace MonoChess.Controllers
         public List<Move> DisallowedMoves { get; private set; } = new();
 
         readonly Board board;
-        readonly int tileSize;
+        const int tileSize = GameParameters.BOARD_WIDTH / 8;
 
         MouseState prevMs = Mouse.GetState();
 
@@ -22,7 +22,6 @@ namespace MonoChess.Controllers
         public PlayerController(Board board)
         {
             this.board = board;
-            tileSize = GameParameters.BOARD_WIDTH / 8;
         }
 
         public Move NextMove(Sides side, ChessState state)
@@ -38,7 +37,7 @@ namespace MonoChess.Controllers
 
             if (!SelectedPiece.IsNull && Util.MouseClicked(ms.LeftButton, prevMs.LeftButton))
             {
-                if (AllowedMoves.Any(m => m.Position == mousePos))
+                if (AllowedMoves.Any(m => m.TargetPosition == mousePos))
                 {
                     move = new Move(SelectedPiece, mousePos);
                 }
