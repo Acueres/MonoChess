@@ -13,17 +13,22 @@ namespace MonoChess.Controllers
     class AIController : IController
     {
         readonly Board board;
-        IAlgorithm algorithm;
+        readonly Dictionary<Algorithm, IAlgorithm> algorithms;
 
         public AIController(Board board)
         {
             this.board = board;
-            algorithm = new Negamax();
+            algorithms = new()
+            {
+                [Algorithm.AlphaBeta] = new AlphaBeta(),
+                [Algorithm.NegaMax] = new NegaMax(),
+                [Algorithm.Randomized] = new Randomized()
+            };
         }
 
-        public Move NextMove(Sides side, ChessState state)
+        public Move NextMove(GameParameters parameters, Sides side, ChessState state)
         {
-            return algorithm.CalculateMove(side, state, board);
+            return algorithms[parameters.AlgorithmType].CalculateMove(parameters.Depth, side, state, board);
         }
     }
 }

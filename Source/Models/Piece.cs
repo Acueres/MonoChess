@@ -15,7 +15,7 @@ namespace MonoChess.Models
         public bool RangeLimited { get => rangeLimited[Type]; }
         public int Score { get => scores[Type]; }
         public string Name { get => names[HashCode.Combine(Type, Side)]; }
-        public static Piece Null { get => new(); }
+        public static Piece Null { get; } = new();
 
         readonly static Dictionary<Pieces, Position[]> directions = new();
         readonly static Dictionary<Pieces, bool> rangeLimited = new()

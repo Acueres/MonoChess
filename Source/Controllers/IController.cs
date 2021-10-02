@@ -10,6 +10,6 @@ namespace MonoChess.Controllers
 {
     interface IController
     {
-        public Move NextMove(Sides side, ChessState state);
+        public Move NextMove(GameParameters parameters, Sides side, ChessState state);
     }
 }

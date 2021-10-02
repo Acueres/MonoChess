@@ -17,8 +17,9 @@ namespace MonoChess
     public enum ChessState
     {
         Opening,
-        Middle,
-        Check
+        Default,
+        WhiteCheck,
+        BlackCheck
     }
 
     public class Chess
@@ -38,10 +39,7 @@ namespace MonoChess
         PlayerController playerController;
         Board board = new();
 
-        int turnCount;
-
         Sides currentSide;
-        Sides playerSide;
 
         ChessState state;
 
@@ -66,26 +64,21 @@ namespace MonoChess
 
         public void Reset()
         {
-            turnCount = 0;
             currentSide = Sides.White;
+            state = ChessState.Opening;
             playerController.SelectedPiece = Piece.Null;
             board.Reset();
         }
 
         public bool Update()
         {
-            if (turnCount == 0)
-            {
-                playerSide = parameters.Side;
-            }
-
-            if (state == ChessState.Check && board.DetectCheckmate(currentSide))
+            if ((state == ChessState.WhiteCheck || state == ChessState.BlackCheck) && board.DetectCheckmate(currentSide))
             {
                 return true;
             }
 
-            IController controller = currentSide == playerSide || !parameters.SinglePlayer ? playerController : aiController;
-            Move move = controller.NextMove(currentSide, state);
+            IController controller = currentSide == parameters.PlayerSide || !parameters.SinglePlayer ? playerController : aiController;
+            Move move = controller.NextMove(parameters, currentSide, state);
 
             if (!move.IsNull)
             {
@@ -95,14 +88,12 @@ namespace MonoChess
 
                 if (board.DetectCheck(currentSide))
                 {
-                    state = ChessState.Check;
+                    state = currentSide == Sides.White ? ChessState.WhiteCheck : ChessState.BlackCheck;
                 }
                 else
                 {
-                    state = ChessState.Middle;
+                    state = ChessState.Default;
                 }
-
-                turnCount++;
             }
 
             return false;
@@ -111,7 +102,7 @@ namespace MonoChess
         public void Draw(GameState gameState)
         {
             Rectangle rect;
-            var size = GameParameters.BOARD_WIDTH / 8;
+            var size = Board.SIZE / 8;
 
             //Draw tiles
             for (int x = 0; x < 8; x++)
@@ -161,7 +152,7 @@ namespace MonoChess
 
             if (gameState != GameState.Running)
             {
-                spriteBatch.Draw(shading, new Rectangle(0, 0, GameParameters.BOARD_WIDTH, GameParameters.BOARD_WIDTH), Color.White);
+                spriteBatch.Draw(shading, new Rectangle(0, 0, Board.SIZE, Board.SIZE), Color.White);
             }
         }
     }

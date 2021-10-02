@@ -14,7 +14,7 @@ namespace MonoChess.Controllers
         public List<Move> DisallowedMoves { get; private set; } = new();
 
         readonly Board board;
-        const int tileSize = GameParameters.BOARD_WIDTH / 8;
+        const int tileSize = Board.SIZE / 8;
 
         MouseState prevMs = Mouse.GetState();
 
@@ -24,7 +24,7 @@ namespace MonoChess.Controllers
             this.board = board;
         }
 
-        public Move NextMove(Sides side, ChessState state)
+        public Move NextMove(GameParameters parameters, Sides side, ChessState state)
         {
             MouseState ms = Mouse.GetState();
 

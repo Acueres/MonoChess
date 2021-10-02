@@ -13,7 +13,7 @@ namespace MonoChess.Algorithms
         readonly Random rnd = new();
         readonly List<Move> possibleMoves = new(1000);
 
-        public Move CalculateMove(Sides side, ChessState state, Board board)
+        public Move CalculateMove(int depth, Sides side, ChessState state, Board board)
         {
             possibleMoves.Clear();
 

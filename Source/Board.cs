@@ -10,6 +10,8 @@ namespace MonoChess
 {
     public class Board
     {
+        public const int SIZE = 504;
+
         Dictionary<Position, Piece> pieces = new();
         readonly bool[] castlingPossible = new bool[2] { true, true };
 
@@ -30,6 +32,11 @@ namespace MonoChess
         {
             get => pieces.ContainsKey(pos) ? pieces[pos] : Piece.Null;
             set => pieces.Add(pos, value);
+        }
+
+        public Piece GetKing(Sides side)
+        {
+            return pieces.Values.SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
         }
 
         public void MakeMove(Move move, out Piece removed)
@@ -301,7 +308,8 @@ namespace MonoChess
         public bool DetectCheck(Sides side)
         {
             var oppositeSide = side == Sides.White ? Sides.Black : Sides.White;
-            var king = pieces.Values.Single(p => p.Type == Pieces.King && p.Side == side);
+            var king = GetKing(side);
+            if (king.IsNull) return true;
 
             foreach (var oppositeMove in GenerateMoves(oppositeSide))
             {
@@ -318,7 +326,8 @@ namespace MonoChess
         {
             var oppositeSide = side == Sides.White ? Sides.Black : Sides.White;
             MakeMove(move, out var removed);
-            var king = pieces.Values.Single(p => p.Type == Pieces.King && p.Side == side);
+            var king = GetKing(side);
+            if (king.IsNull) return true;
 
             foreach (var oppositeMove in GenerateMoves(oppositeSide))
             {

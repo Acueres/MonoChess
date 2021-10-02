@@ -6,7 +6,7 @@
         public Position TargetPosition { get; set; }
         public bool IsNull { get => Piece.IsNull;  }
 
-        public static Move Null { get => new(); }
+        public static Move Null { get; } = new();
 
         public Move(Piece piece, Position target)
         {

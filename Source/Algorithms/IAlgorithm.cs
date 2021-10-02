@@ -1,14 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 using MonoChess.Models;
 
 namespace MonoChess.Algorithms
 {
+    public enum Algorithm
+    {
+        AlphaBeta,
+        NegaMax,
+        Randomized,
+        Count
+    }
+
     interface IAlgorithm
     {
-        public Move CalculateMove(Sides side, ChessState state, Board board);
+        public Move CalculateMove(int depth, Sides side, ChessState state, Board board);
     }
 }

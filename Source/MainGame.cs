@@ -66,8 +66,8 @@ namespace MonoChess
 
         protected override void Initialize()
         {
-            graphics.PreferredBackBufferWidth = GameParameters.BOARD_WIDTH;
-            graphics.PreferredBackBufferHeight = GameParameters.BOARD_WIDTH;
+            graphics.PreferredBackBufferWidth = Board.SIZE;
+            graphics.PreferredBackBufferHeight = Board.SIZE;
             graphics.ApplyChanges();
 
             byte[] ttfData = File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf");

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 
 using MonoChess.Models;
 
-
 namespace MonoChess.Algorithms
 {
-    public class NegaMax : IAlgorithm
+    class AlphaBeta : IAlgorithm
     {
         Board board;
 
@@ -23,7 +21,8 @@ namespace MonoChess.Algorithms
             Move bestMove = Move.Null;
             this.board = new(board);
 
-            int max = -int.MaxValue;
+            int alpha = -int.MaxValue;
+            int beta = int.MaxValue;
 
             foreach (var move in board.GenerateMoves(side))
             {
@@ -33,12 +32,13 @@ namespace MonoChess.Algorithms
                 }
 
                 this.board.MakeMove(move, out var removed);
-                int score = -CalculateScore(depth - 1, side);
+
+                int score = -CalculateScore(alpha, beta, depth - 1, side);
                 this.board.ReverseMove(move, removed);
-               
-                if (score > max)
+
+                if (score > alpha)
                 {
-                    max = score;
+                    alpha = score;
                     bestMove = move;
                 }
             }
@@ -46,28 +46,33 @@ namespace MonoChess.Algorithms
             return bestMove;
         }
 
-        int CalculateScore(int depth, Sides side)
+        int CalculateScore(int alpha, int beta, int depth, Sides side)
         {
             side = side == Sides.White ? Sides.Black : Sides.White;
 
-            if (depth == 0) 
+            if (depth == 0)
             {
                 return board.GetScore(side);
             }
 
-            int max = -int.MaxValue;
             foreach (var move in board.GenerateMoves(side))
             {
                 board.MakeMove(move, out var removed);
-                int score = -CalculateScore(depth - 1, side);
+                int score = -CalculateScore(-beta, -alpha, depth - 1, side);
                 board.ReverseMove(move, removed);
 
-                if (score > max)
+                if (score >= beta)
                 {
-                    max = score;
+                    return beta;
+                }
+
+                if (score > alpha)
+                {
+                    alpha = score;
                 }
             }
-            return max;
+
+            return alpha;
         }
     }
 }
