@@ -48,7 +48,7 @@ namespace MonoChess.Algorithms
 
         int CalculateScore(int depth, Sides side)
         {
-            side = side == Sides.White ? Sides.Black : Sides.White;
+            side = Util.ReverseSide(side);
 
             if (depth == 0) 
             {
@@ -67,6 +67,7 @@ namespace MonoChess.Algorithms
                     max = score;
                 }
             }
+
             return max;
         }
     }

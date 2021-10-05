@@ -24,6 +24,8 @@ namespace MonoChess
 
     public class Chess
     {
+        MainGame game;
+
         SpriteBatch spriteBatch;
         Texture2D whiteTile;
         Texture2D blackTile;
@@ -40,12 +42,13 @@ namespace MonoChess
         Board board = new();
 
         Sides currentSide;
-
         ChessState state;
 
-        public Chess(GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
+
+        public Chess(MainGame game, GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
             Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
+            this.game = game;
             this.spriteBatch = spriteBatch;
             this.parameters = parameters;
             this.textures = textures;
@@ -59,7 +62,7 @@ namespace MonoChess
             allowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
             disallowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Red);
             selectedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Blue);
-            shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f); 
+            shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f);
         }
 
         public void Reset()
@@ -70,11 +73,12 @@ namespace MonoChess
             board.Reset();
         }
 
-        public bool Update()
+        public void Update()
         {
             if ((state == ChessState.WhiteCheck || state == ChessState.BlackCheck) && board.DetectCheckmate(currentSide))
             {
-                return true;
+                game.State = GameState.Endgame;
+                return;
             }
 
             IController controller = currentSide == parameters.PlayerSide || !parameters.SinglePlayer ? playerController : aiController;
@@ -84,7 +88,7 @@ namespace MonoChess
             {
                 board.MakeMove(move, out _);
 
-                currentSide = currentSide == Sides.White ? Sides.Black : Sides.White;
+                currentSide = Util.ReverseSide(currentSide);
 
                 if (board.DetectCheck(currentSide))
                 {
@@ -95,8 +99,6 @@ namespace MonoChess
                     state = ChessState.Default;
                 }
             }
-
-            return false;
         }
 
         public void Draw(GameState gameState)
@@ -153,6 +155,12 @@ namespace MonoChess
             if (gameState != GameState.Running)
             {
                 spriteBatch.Draw(shading, new Rectangle(0, 0, Board.SIZE, Board.SIZE), Color.White);
+            }
+
+            if (gameState == GameState.Endgame)
+            {
+                spriteBatch.DrawString(fonts[24], Util.ReverseSide(currentSide).ToString() + " Victory",
+                    new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 120), Color.AntiqueWhite);
             }
         }
     }

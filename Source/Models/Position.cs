@@ -15,6 +15,11 @@ namespace MonoChess.Models
             Y = y;
         }
 
+        public bool InBounds(int lower, int upper)
+        {
+            return X >= lower && X < upper && Y >= lower && Y < upper;
+        }
+
         public static Position operator +(Position val1, Position val2)
         {
             return new Position(val1.X + val2.X, val1.Y + val2.Y);

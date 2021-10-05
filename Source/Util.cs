@@ -8,8 +8,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
-using MonoChess.Algorithms;
-
 
 namespace MonoChess
 {
@@ -46,6 +44,11 @@ namespace MonoChess
             }
 
             return ++index;
+        }
+
+        public static Sides ReverseSide(Sides side)
+        {
+            return side == Sides.White ? Sides.Black : Sides.White;
         }
     }
 }

@@ -15,25 +15,16 @@ using FontStashSharp;
 
 namespace MonoChess
 {
-    class Menu
+    public class Menu
     {
-        public void ToMain() => state = MenuState.Main;
-
-        enum MenuState
-        {
-            Main,
-            Setup,
-            InGame
-        }
-
         SpriteBatch spriteBatch;
         List<IGUIElement> main;
         List<IGUIElement> setup;
-        List<IGUIElement> inGame;
+        List<IGUIElement> pause;
+        List<IGUIElement> endgame;
+        Dictionary<GameState, List<IGUIElement>> grids;
 
-        MenuState state;
         MouseState previousMs = Mouse.GetState();
-        bool abandonGame;
 
         readonly int[] depthLevels = { 1, 2, 3, 4 };
         readonly Dictionary<int, string> difficultyLevels = new()
@@ -45,7 +36,7 @@ namespace MonoChess
         };
 
 
-        public Menu(MainGame game, GraphicsDevice graphics, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
+        public Menu(MainGame game, GraphicsDevice graphics, Chess chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.spriteBatch = spriteBatch;
 
@@ -55,65 +46,40 @@ namespace MonoChess
 
             CreateMainMenu(game, parameters, fonts);
             CreateSetupMenu(game, parameters, fonts, textures, buttonBase);
-            CreateInGameMenu(game, fonts);
+            CreateInGameMenu(game, chess, fonts);
+            CreateEndgameMenu(game, chess, fonts);
+
+            grids = new Dictionary<GameState, List<IGUIElement>>()
+            {
+                [GameState.MainMenu] = main,
+                [GameState.SetupMenu] = setup,
+                [GameState.Pause] = pause,
+                [GameState.Endgame] = endgame
+            };
         }
 
-        public void Draw(GameState gameState)
+        public void Draw(GameState state)
         {
-            if (state == MenuState.Main)
+            if (state == GameState.Running) return;
+
+            foreach (var el in grids[state])
             {
-                foreach (var el in main)
-                {
-                    el.Draw(spriteBatch);
-                }
-            }
-            else if (state == MenuState.Setup)
-            {
-                foreach (var el in setup)
-                {
-                    el.Draw(spriteBatch);
-                }
-            }
-            else if (state == MenuState.InGame && gameState == GameState.Pause)
-            {
-                foreach (var el in inGame)
-                {
-                    el.Draw(spriteBatch);
-                }
+                el.Draw(spriteBatch);
             }
         }
 
-        public bool Update(GameState gameState)
+        public void Update(GameState state)
         {
-            abandonGame = false;
+            if (state == GameState.Running) return;
 
             MouseState ms = Mouse.GetState();
 
-            if (state == MenuState.Main)
+            foreach (var el in grids[state])
             {
-                foreach (var el in main)
-                {
-                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
-                }
-            }
-            else if (state == MenuState.Setup)
-            {
-                foreach (var el in setup)
-                {
-                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
-                }
-            }
-            else if (state == MenuState.InGame && gameState == GameState.Pause)
-            {
-                foreach (var el in inGame)
-                {
-                    el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
-                }
+                el.Update(Util.MouseClicked(ms.LeftButton, previousMs.LeftButton));
             }
 
             previousMs = ms;
-
-            return abandonGame;
         }
 
         private void CreateMainMenu(MainGame game, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
@@ -135,7 +101,7 @@ namespace MonoChess
                 Text = "Single Player",
                 TextColor = Color.Black,
                 Font = fonts[22],
-                Action = () => { parameters.SinglePlayer = true; state = MenuState.Setup; }
+                Action = () => { parameters.SinglePlayer = true; game.State = GameState.SetupMenu; }
             };
             main.Add(singlePlayer);
 
@@ -145,7 +111,7 @@ namespace MonoChess
                 Text = "Two Players",
                 TextColor = Color.Black,
                 Font = fonts[22],
-                Action = () => { parameters.SinglePlayer = false; state = MenuState.InGame; game.State = GameState.Running; }
+                Action = () => { parameters.SinglePlayer = false; game.State = GameState.Running; game.State = GameState.Running; }
             };
             main.Add(twoPlayers);
 
@@ -257,7 +223,6 @@ namespace MonoChess
                 Font = fonts[22],
                 Action = () => 
                 { 
-                    state = MenuState.InGame; 
                     game.State = GameState.Running; 
                     Mouse.SetPosition(Board.SIZE / 2, Board.SIZE / 2);
                 }
@@ -270,14 +235,14 @@ namespace MonoChess
                 Text = "Back",
                 TextColor = Color.Black,
                 Font = fonts[22],
-                Action = () => { state = MenuState.Main; }
+                Action = () => { game.State = GameState.MainMenu; }
             };
             setup.Add(back);
         }
 
-        private void CreateInGameMenu(MainGame game, Dictionary<int, DynamicSpriteFont> fonts)
+        private void CreateInGameMenu(MainGame game, Chess chess, Dictionary<int, DynamicSpriteFont> fonts)
         {
-            inGame = new List<IGUIElement>();
+            pause = new List<IGUIElement>();
 
             Label pauseLabel = new()
             {
@@ -286,7 +251,7 @@ namespace MonoChess
                 TextColor = Color.AntiqueWhite,
                 Font = fonts[32]
             };
-            inGame.Add(pauseLabel);
+            pause.Add(pauseLabel);
 
             Button abandon = new()
             {
@@ -294,9 +259,13 @@ namespace MonoChess
                 Text = "Leave match",
                 TextColor = Color.Black,
                 Font = fonts[22],
-                Action = () => { abandonGame = true; }
+                Action = () => 
+                {
+                    game.State = GameState.MainMenu;
+                    chess.Reset();
+                }
             };
-            inGame.Add(abandon);
+            pause.Add(abandon);
 
             Button @return = new()
             {
@@ -306,7 +275,26 @@ namespace MonoChess
                 Font = fonts[22],
                 Action = () => { game.State = GameState.Running; }
             };
-            inGame.Add(@return);
+            pause.Add(@return);
+        }
+
+        private void CreateEndgameMenu(MainGame game, Chess chess, Dictionary<int, DynamicSpriteFont> fonts)
+        {
+            endgame = new List<IGUIElement>();
+
+            Button abandon = new()
+            {
+                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
+                Text = "Main Menu",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () =>
+                {
+                    game.State = GameState.MainMenu;
+                    chess.Reset();
+                }
+            };
+            endgame.Add(abandon);
         }
     }
 }

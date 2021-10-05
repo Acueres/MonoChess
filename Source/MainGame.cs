@@ -30,9 +30,11 @@ namespace MonoChess
 
     public enum GameState
     {
-        Menu,
+        MainMenu,
+        SetupMenu,
         Running,
-        Pause
+        Pause,
+        Endgame
     }
 
     public class MainGame : Game
@@ -80,8 +82,8 @@ namespace MonoChess
 
             var textures = LoadTextures();
 
-            menu = new Menu(this, GraphicsDevice, parameters, spriteBatch, textures, fonts);
-            chess = new Chess(GraphicsDevice, spriteBatch, parameters, textures, fonts);
+            chess = new Chess(this, GraphicsDevice, spriteBatch, parameters, textures, fonts);
+            menu = new Menu(this, GraphicsDevice, chess, parameters, spriteBatch, textures, fonts);
 
             base.Initialize();
         }
@@ -97,18 +99,12 @@ namespace MonoChess
             {
                 CheckInput();
 
-                bool finished = menu.Update(State);
                 if (State == GameState.Running)
                 {
-                    finished = chess.Update();
+                    chess.Update();
                 }
 
-                if (finished)
-                {
-                    State = GameState.Menu;
-                    menu.ToMain();
-                    chess.Reset();
-                }
+                menu.Update(State);
             }
 
             base.Update(gameTime);

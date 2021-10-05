@@ -32,8 +32,7 @@ namespace MonoChess.Algorithms
                 }
 
                 this.board.MakeMove(move, out var removed);
-
-                int score = -CalculateScore(alpha, beta, depth - 1, side);
+                int score = -CalculateScore(-beta, -alpha, depth - 1, side);
                 this.board.ReverseMove(move, removed);
 
                 if (score > alpha)
@@ -48,7 +47,7 @@ namespace MonoChess.Algorithms
 
         int CalculateScore(int alpha, int beta, int depth, Sides side)
         {
-            side = side == Sides.White ? Sides.Black : Sides.White;
+            side = Util.ReverseSide(side);
 
             if (depth == 0)
             {
