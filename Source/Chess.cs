@@ -70,7 +70,7 @@ namespace MonoChess
             currentSide = Sides.White;
             state = ChessState.Opening;
             playerController.SelectedPiece = Piece.Null;
-            board.Reset();
+            board.SetPieces();
         }
 
         public void Update()
@@ -162,6 +162,26 @@ namespace MonoChess
                 spriteBatch.DrawString(fonts[24], Util.ReverseSide(currentSide).ToString() + " Victory",
                     new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 120), Color.AntiqueWhite);
             }
+        }
+
+        public void LoadBoardState()
+        {
+            if (parameters.PiecesData != null)
+            {
+                board.SetPieces(parameters.PiecesData);
+            }
+        }
+
+        public void EraseState()
+        {
+            parameters.PiecesData = null;
+            parameters.Save();
+        }
+
+        public void SaveState()
+        {
+            parameters.PiecesData = board.GetPiecesData();
+            parameters.Save();
         }
     }
 }

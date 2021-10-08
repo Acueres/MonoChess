@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using MonoChess.Models;
 
@@ -15,11 +13,9 @@ namespace MonoChess
         Dictionary<Position, Piece> pieces = new();
         readonly bool[] castlingPossible = new bool[2] { true, true };
 
-        public void Reset() => SetInitialPlacement();
-
         public Board()
         {
-            SetInitialPlacement();
+            SetPieces();
         }
 
         public Board(Board board)
@@ -363,7 +359,7 @@ namespace MonoChess
             return pieces.Values.SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
         }
 
-        private void SetInitialPlacement()
+        public void SetPieces()
         {
             pieces.Clear();
 
@@ -407,6 +403,59 @@ namespace MonoChess
 
             //ensuring the ai chooses more different types of pieces
             pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
+        }
+
+        public void SetPieces(int[] enumData)
+        {
+            var piecesData = new List<Piece>();
+
+            for (int y = 0, i = 0; y < 8 && i < enumData.Length; y++)
+            {
+                for (int x = 0; x < 8 && i < enumData.Length; x++, i++)
+                {
+                    if (enumData[i] != 0)
+                    {
+                        piecesData.Add(new((Pieces)Math.Abs(enumData[i]), enumData[i] > 0 ? Sides.White : Sides.Black, new(x, y)));
+                    }
+                }
+            }
+
+            SetPieces(piecesData.ToArray());
+        }
+
+        public void SetPieces(Piece[] piecesData)
+        {
+            pieces.Clear();
+
+            foreach (var piece in piecesData)
+            {
+                pieces.Add(piece.Position, piece);
+            }
+
+            pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
+        }
+
+        public int[] GetPiecesData()
+        {
+            int[] data = new int[8 * 8];
+
+            int i = 0;
+            for (int y = 0; y < 8; y++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    var pos = new Position(x, y);
+                    if (pieces.ContainsKey(pos))
+                    {
+                        //pieces coded by their enum value, white positive, black negative
+                        data[i] = (int)pieces[pos].Type * (pieces[pos].Side == Sides.White ? 1 : -1);
+                    }
+
+                    i++;
+                }
+            }
+
+            return data;
         }
     }
 }

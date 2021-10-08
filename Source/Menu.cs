@@ -44,7 +44,7 @@ namespace MonoChess
             Button.BaseTexture = buttonBase;
             Button.Highlight = Util.GetColoredTexture(graphics, 50, 50, Color.White);
 
-            CreateMainMenu(game, parameters, fonts);
+            CreateMainMenu(game, chess, parameters, fonts);
             CreateSetupMenu(game, parameters, fonts, textures, buttonBase);
             CreateInGameMenu(game, chess, fonts);
             CreateEndgameMenu(game, chess, fonts);
@@ -82,7 +82,7 @@ namespace MonoChess
             previousMs = ms;
         }
 
-        private void CreateMainMenu(MainGame game, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
+        private void CreateMainMenu(MainGame game, Chess chess, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
         {
             main = new List<IGUIElement>();
 
@@ -95,9 +95,26 @@ namespace MonoChess
             };
             main.Add(chessLabel);
 
-            Button singlePlayer = new()
+            Button resume = new()
             {
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 100, 120, 30),
+                Text = "Resume",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () => 
+                {
+                    if (parameters.Load())
+                    {
+                        chess.LoadBoardState();
+                        game.State = GameState.Running;
+                    }
+                }
+            };
+            main.Add(resume);
+
+            Button singlePlayer = new()
+            {
+                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
                 Text = "Single Player",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -107,7 +124,7 @@ namespace MonoChess
 
             Button twoPlayers = new()
             {
-                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
+                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 20, 120, 30),
                 Text = "Two Players",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -117,7 +134,7 @@ namespace MonoChess
 
             Button quit = new()
             {
-                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2, 120, 30),
+                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 + 60, 120, 30),
                 Text = "Quit Game",
                 TextColor = Color.Black,
                 Font = fonts[22],
@@ -240,7 +257,8 @@ namespace MonoChess
             setup.Add(back);
         }
 
-        private void CreateInGameMenu(MainGame game, Chess chess, Dictionary<int, DynamicSpriteFont> fonts)
+        private void CreateInGameMenu(MainGame game, Chess chess,
+            Dictionary<int, DynamicSpriteFont> fonts)
         {
             pause = new List<IGUIElement>();
 
@@ -255,17 +273,33 @@ namespace MonoChess
 
             Button abandon = new()
             {
+                Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 100, 120, 30),
+                Text = "Abandon",
+                TextColor = Color.Black,
+                Font = fonts[22],
+                Action = () =>
+                {
+                    chess.EraseState();
+                    chess.Reset();
+                    game.State = GameState.MainMenu;
+                }
+            };
+            pause.Add(abandon);
+
+            Button leave = new()
+            {
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
-                Text = "Leave match",
+                Text = "Leave",
                 TextColor = Color.Black,
                 Font = fonts[22],
                 Action = () => 
                 {
-                    game.State = GameState.MainMenu;
+                    chess.SaveState();
                     chess.Reset();
+                    game.State = GameState.MainMenu;
                 }
             };
-            pause.Add(abandon);
+            pause.Add(leave);
 
             Button @return = new()
             {
@@ -290,8 +324,9 @@ namespace MonoChess
                 Font = fonts[22],
                 Action = () =>
                 {
-                    game.State = GameState.MainMenu;
+                    chess.EraseState();
                     chess.Reset();
+                    game.State = GameState.MainMenu;
                 }
             };
             endgame.Add(abandon);
