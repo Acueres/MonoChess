@@ -93,18 +93,17 @@ namespace MonoChess
             Content.Unload();
         }
 
-        protected override void Update(GameTime gameTime)
+        protected override async void Update(GameTime gameTime)
         {
             if (IsActive)
             {
                 CheckInput();
+                menu.Update(State);
 
                 if (State == GameState.Running)
                 {
-                    chess.Update();
+                    await chess.Update();
                 }
-
-                menu.Update(State);
             }
 
             base.Update(gameTime);

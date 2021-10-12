@@ -43,6 +43,7 @@ namespace MonoChess
 
         Sides currentSide;
         ChessState state;
+        bool waiting;
 
 
         public Chess(MainGame game, GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
@@ -67,38 +68,47 @@ namespace MonoChess
 
         public void Reset()
         {
+            waiting = false;
             currentSide = Sides.White;
             state = ChessState.Opening;
             playerController.SelectedPiece = Piece.Null;
             board.SetPieces();
         }
 
-        public void Update()
+        public async Task Update()
         {
-            if ((state == ChessState.WhiteCheck || state == ChessState.BlackCheck) && board.DetectCheckmate(currentSide))
+            if (waiting || game.State == GameState.Endgame) return;
+
+            if (board.DetectCheckmate(currentSide))
             {
                 game.State = GameState.Endgame;
                 return;
             }
 
+            waiting = true;
             IController controller = currentSide == parameters.PlayerSide || !parameters.SinglePlayer ? playerController : aiController;
-            Move move = controller.NextMove(parameters, currentSide, state);
+            Move move = await controller.NextMoveAsync(parameters, currentSide, state);
 
-            if (!move.IsNull)
+            if (move.IsNull)
             {
-                board.MakeMove(move, out _);
-
-                currentSide = Util.ReverseSide(currentSide);
-
-                if (board.DetectCheck(currentSide))
-                {
-                    state = currentSide == Sides.White ? ChessState.WhiteCheck : ChessState.BlackCheck;
-                }
-                else
-                {
-                    state = ChessState.Default;
-                }
+                waiting = false;
+                return;
             }
+
+            board.MakeMove(move, out _);
+
+            currentSide = Util.ReverseSide(currentSide);
+
+            if (board.DetectCheck(currentSide))
+            {
+                state = currentSide == Sides.White ? ChessState.WhiteCheck : ChessState.BlackCheck;
+            }
+            else
+            {
+                state = ChessState.Default;
+            }
+
+            waiting = false;
         }
 
         public void Draw(GameState gameState)
@@ -150,6 +160,15 @@ namespace MonoChess
                     (int)(size * 0.7f), (int)(size * 0.8f));
 
                 spriteBatch.Draw(textures[piece.Name], rect, Color.White);
+            }
+
+            if (waiting)
+            {
+                spriteBatch.Draw(shading,
+                    new Rectangle(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30, 120, 30), Color.White);
+
+                spriteBatch.DrawString(fonts[26], "Calculating",
+                    new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30), Color.Azure);
             }
 
             if (gameState != GameState.Running)

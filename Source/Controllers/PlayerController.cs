@@ -1,7 +1,9 @@
-﻿using Microsoft.Xna.Framework.Input;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using Microsoft.Xna.Framework.Input;
 
 using MonoChess.Models;
 
@@ -24,7 +26,12 @@ namespace MonoChess.Controllers
             this.board = board;
         }
 
-        public Move NextMove(GameParameters parameters, Sides side, ChessState state)
+        public async Task<Move> NextMoveAsync(GameParameters parameters, Sides side, ChessState state)
+        {
+            return NextMove(side);
+        }
+
+        public Move NextMove(Sides side)
         {
             MouseState ms = Mouse.GetState();
 

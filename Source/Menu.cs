@@ -26,13 +26,14 @@ namespace MonoChess
 
         MouseState previousMs = Mouse.GetState();
 
-        readonly int[] depthLevels = { 1, 2, 3, 4 };
+        readonly int[] depthLevels = { 1, 2, 3, 4, 5 };
         readonly Dictionary<int, string> difficultyLevels = new()
         {
             [1] = "Very Easy",
             [2] = "Easy",
             [3] = "Normal",
-            [4] = "Hard"
+            [4] = "Hard",
+            [5] = "Very Hard"
         };
 
 

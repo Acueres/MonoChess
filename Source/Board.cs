@@ -172,7 +172,7 @@ namespace MonoChess
 
         public IEnumerable<Piece> GetPieces()
         {
-            foreach (var piece in pieces.Values)
+            foreach (var piece in pieces.Values.ToArray())
             {
                 yield return piece;
             }
@@ -303,9 +303,9 @@ namespace MonoChess
             var king = GetKing(side);
             if (king.IsNull) return true;
 
-            foreach (var oppositeMove in GenerateMoves(oppositeSide))
+            foreach (var move in GenerateMoves(oppositeSide))
             {
-                if (oppositeMove.TargetPosition == king.Position)
+                if (move.TargetPosition == king.Position)
                 {
                     return true;
                 }
