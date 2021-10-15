@@ -24,27 +24,33 @@ namespace MonoChess
 
     public class Chess
     {
-        MainGame game;
+        readonly MainGame game;
 
-        SpriteBatch spriteBatch;
-        Texture2D whiteTile;
-        Texture2D blackTile;
-        Texture2D allowedTile;
-        Texture2D disallowedTile;
-        Texture2D selectedTile;
-        Texture2D shading;
-        Dictionary<int, DynamicSpriteFont> fonts;
-        Dictionary<string, Texture2D> textures;
+        readonly SpriteBatch spriteBatch;
+        readonly Texture2D whiteTile;
+        readonly Texture2D blackTile;
+        readonly Texture2D allowedTile;
+        readonly Texture2D disallowedTile;
+        readonly Texture2D selectedTile;
+        readonly Texture2D shading;
+        readonly Texture2D dangerTile;
+        readonly Texture2D moveHighlightTile;
+        readonly Dictionary<int, DynamicSpriteFont> fonts;
+        readonly Dictionary<string, Texture2D> textures;
+        readonly string[] filesChars = { "a", "b", "c", "d", "e", "f", "g", "h" };
 
-        GameParameters parameters;
-        AIController aiController;
-        PlayerController playerController;
-        Board board = new();
+        readonly GameParameters parameters;
+        readonly AIController aiController;
+        readonly PlayerController playerController;
+        readonly Board board = new();
 
+        Task<Move> nextMoveTask;
         Sides currentSide;
         ChessState state;
+        Move move = Move.Null;
         bool waiting;
-
+        bool PlayerTurn { get => currentSide == parameters.PlayerSide || !parameters.SinglePlayer; }
+        double calculationTime;
 
         public Chess(MainGame game, GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
             Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
@@ -60,19 +66,26 @@ namespace MonoChess
 
             whiteTile = Util.GetColoredTexture(graphics, 50, 50, Color.LightGoldenrodYellow);
             blackTile = Util.GetColoredTexture(graphics, 50, 50, Color.Olive);
-            allowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
-            disallowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Red);
+            allowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Green);
+            disallowedTile = Util.GetColoredTexture(graphics, 50, 50, Color.DarkRed);
             selectedTile = Util.GetColoredTexture(graphics, 50, 50, Color.Blue);
+            dangerTile = Util.GetColoredTexture(graphics, 50, 50, Color.Red);
+            moveHighlightTile = Util.GetColoredTexture(graphics, 50, 50, Color.Gold);
+
             shading = Util.GetColoredTexture(graphics, 50, 50, Color.Black, 0.8f);
         }
 
         public void Reset()
         {
-            waiting = false;
+            playerController.Interrupt();
+            nextMoveTask.Wait();
+
             currentSide = Sides.White;
-            state = ChessState.Opening;
             playerController.SelectedPiece = Piece.Null;
+            move = Move.Null;
             board.SetPieces();
+            waiting = false;
+            state = ChessState.Opening;
         }
 
         public async Task Update()
@@ -85,20 +98,6 @@ namespace MonoChess
                 return;
             }
 
-            waiting = true;
-            IController controller = currentSide == parameters.PlayerSide || !parameters.SinglePlayer ? playerController : aiController;
-            Move move = await controller.NextMoveAsync(parameters, currentSide, state);
-
-            if (move.IsNull)
-            {
-                waiting = false;
-                return;
-            }
-
-            board.MakeMove(move, out _);
-
-            currentSide = Util.ReverseSide(currentSide);
-
             if (board.DetectCheck(currentSide))
             {
                 state = currentSide == Sides.White ? ChessState.WhiteCheck : ChessState.BlackCheck;
@@ -108,15 +107,28 @@ namespace MonoChess
                 state = ChessState.Default;
             }
 
+            waiting = true;
+            IController controller = PlayerTurn ? playerController : aiController;
+            calculationTime = 0;
+            nextMoveTask = controller.NextMoveAsync(parameters, currentSide, state);
+            move = await nextMoveTask;
+
+            if (move.IsNull) return;
+
+            board.MakeMove(move, out _);
+
+            currentSide = Util.ReverseSide(currentSide);
+
             waiting = false;
         }
 
-        public void Draw(GameState gameState)
+        public void Draw(GameState gameState, GameTime gameTime)
         {
             Rectangle rect;
             var size = Board.SIZE / 8;
+            calculationTime += gameTime.ElapsedGameTime.TotalSeconds;
 
-            //Draw tiles
+            //Draw board
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
@@ -127,11 +139,12 @@ namespace MonoChess
 
                     if (parameters.ShowGrid)
                     {
-                        spriteBatch.DrawString(fonts[22], x + " " + y, new Vector2(x * size, y * size), Color.Red);
+                        spriteBatch.DrawString(fonts[22], filesChars[x] + (8 - y), new Vector2(x * size, y * size), Color.Red);
                     }
                 }
             }
 
+            //Draw selected piece moves
             if (!playerController.SelectedPiece.IsNull)
             {
                 spriteBatch.Draw(selectedTile, new Rectangle(playerController.SelectedPiece.Position.X * size,
@@ -153,6 +166,25 @@ namespace MonoChess
                 }
             }
 
+            //Draw when king in danger
+            if (state == ChessState.WhiteCheck || state == ChessState.BlackCheck)
+            {
+                Sides side = state == ChessState.WhiteCheck ? Sides.White : Sides.Black;
+                var king = board.GetKing(side);
+                rect = new(king.Position.X * size, king.Position.Y * size, size, size);
+                spriteBatch.Draw(dangerTile, rect, Color.White * 0.5f);
+            }
+
+            //Draw previous move
+            if (!move.IsNull)
+            {
+                rect = new(move.TargetPosition.X * size, move.TargetPosition.Y * size, size, size);
+                spriteBatch.Draw(moveHighlightTile, rect, Color.White * 0.5f);
+
+                rect = new(move.Piece.Position.X * size, move.Piece.Position.Y * size, size, size);
+                spriteBatch.Draw(moveHighlightTile, rect, Color.White * 0.5f);
+            }
+
             //Draw pieces
             foreach (var piece in board.GetPieces())
             {
@@ -162,7 +194,7 @@ namespace MonoChess
                 spriteBatch.Draw(textures[piece.Name], rect, Color.White);
             }
 
-            if (waiting)
+            if (waiting && !PlayerTurn && calculationTime > 0.5)
             {
                 spriteBatch.Draw(shading,
                     new Rectangle(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30, 120, 30), Color.White);
@@ -188,6 +220,7 @@ namespace MonoChess
             if (parameters.PiecesData != null)
             {
                 board.SetPieces(parameters.PiecesData);
+                board.Castling = parameters.CastlingData;
             }
         }
 
@@ -200,6 +233,7 @@ namespace MonoChess
         public void SaveState()
         {
             parameters.PiecesData = board.GetPiecesData();
+            parameters.CastlingData = board.Castling;
             parameters.Save();
         }
     }

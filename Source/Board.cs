@@ -10,8 +10,8 @@ namespace MonoChess
     {
         public const int SIZE = 504;
 
+        public bool[] Castling { get; set; } = new bool[2] { true, true };
         Dictionary<Position, Piece> pieces = new();
-        readonly bool[] castlingPossible = new bool[2] { true, true };
 
         public Board()
         {
@@ -21,7 +21,7 @@ namespace MonoChess
         public Board(Board board)
         {
             pieces = new(board.pieces);
-            Array.Copy(castlingPossible, board.castlingPossible, 2);
+            Array.Copy(Castling, board.Castling, 2);
         }
 
         public Piece this[Position pos]
@@ -93,7 +93,7 @@ namespace MonoChess
             pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
             pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
 
-            castlingPossible[(int)side] = false;
+            Castling[(int)side] = false;
 
             return rook;
         }
@@ -145,7 +145,7 @@ namespace MonoChess
             pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
             pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
 
-            castlingPossible[(int)side] = true;
+            Castling[(int)side] = true;
         }
 
         public int GetScore(Sides side)
@@ -237,7 +237,7 @@ namespace MonoChess
                 }
             }
 
-            if (piece.Type == Pieces.King && castlingPossible[(int)piece.Side])
+            if (piece.Type == Pieces.King && Castling[(int)piece.Side])
             {
                 foreach (var castlingMove in GenerateCastlingMoves(piece))
                 {
@@ -354,14 +354,16 @@ namespace MonoChess
             return true;
         }
 
-        private Piece GetKing(Sides side)
+        public Piece GetKing(Sides side)
         {
-            return pieces.Values.SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
+            return pieces.Values.ToArray().SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
         }
 
         public void SetPieces()
         {
             pieces.Clear();
+            Castling[0] = true;
+            Castling[1] = true;
 
             var arrangementOrder = new Pieces[]
             {
@@ -405,17 +407,17 @@ namespace MonoChess
             pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
         }
 
-        public void SetPieces(int[] enumData)
+        public void SetPieces(int[] numData)
         {
             var piecesData = new List<Piece>();
 
-            for (int y = 0, i = 0; y < 8 && i < enumData.Length; y++)
+            for (int y = 0, i = 0; y < 8 && i < numData.Length; y++)
             {
-                for (int x = 0; x < 8 && i < enumData.Length; x++, i++)
+                for (int x = 0; x < 8 && i < numData.Length; x++, i++)
                 {
-                    if (enumData[i] != 0)
+                    if (numData[i] != 0)
                     {
-                        piecesData.Add(new((Pieces)Math.Abs(enumData[i]), enumData[i] > 0 ? Sides.White : Sides.Black, new(x, y)));
+                        piecesData.Add(new((Pieces)Math.Abs(numData[i]), numData[i] > 0 ? Sides.White : Sides.Black, new(x, y)));
                     }
                 }
             }

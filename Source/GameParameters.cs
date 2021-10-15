@@ -15,6 +15,7 @@ namespace MonoChess
         public Algorithm AlgorithmType { get; set; }
         public int Depth { get; set; } = 3;
         public int[] PiecesData { get; set; }
+        public bool[] CastlingData { get; set; }
 
         public void Save()
         {

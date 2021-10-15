@@ -263,14 +263,14 @@ namespace MonoChess
         {
             pause = new List<IGUIElement>();
 
-            Label pauseLabel = new()
+            Label menuLabel = new()
             {
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 150, 120, 30),
-                Text = "Pause",
+                Text = "Menu",
                 TextColor = Color.AntiqueWhite,
                 Font = fonts[32]
             };
-            pause.Add(pauseLabel);
+            pause.Add(menuLabel);
 
             Button abandon = new()
             {
@@ -287,10 +287,10 @@ namespace MonoChess
             };
             pause.Add(abandon);
 
-            Button leave = new()
+            Button pauseButton = new()
             {
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
-                Text = "Leave",
+                Text = "Pause",
                 TextColor = Color.Black,
                 Font = fonts[22],
                 Action = () => 
@@ -300,7 +300,7 @@ namespace MonoChess
                     game.State = GameState.MainMenu;
                 }
             };
-            pause.Add(leave);
+            pause.Add(pauseButton);
 
             Button @return = new()
             {

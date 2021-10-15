@@ -14,12 +14,11 @@ namespace MonoChess.Controllers
         public Piece SelectedPiece { get; set; } = Piece.Null;
         public List<Move> AllowedMoves { get; private set; } = new();
         public List<Move> DisallowedMoves { get; private set; } = new();
+        public bool Interrupt() => stopTask = true;
 
         readonly Board board;
         const int tileSize = Board.SIZE / 8;
-
-        MouseState prevMs = Mouse.GetState();
-
+        bool stopTask;
 
         public PlayerController(Board board)
         {
@@ -28,7 +27,32 @@ namespace MonoChess.Controllers
 
         public async Task<Move> NextMoveAsync(GameParameters parameters, Sides side, ChessState state)
         {
-            return NextMove(side);
+            Move move = Move.Null;
+            stopTask = false;
+
+            await Task.Run(async () =>
+            {
+                MouseState prevMs = Mouse.GetState();
+
+                bool clicked;
+                do
+                {
+                    MouseState ms = Mouse.GetState();
+                    clicked = Util.MouseClicked(ms.LeftButton, prevMs.LeftButton);
+                    prevMs = ms;
+
+                    if (clicked)
+                    {
+                        move = NextMove(side);
+                    }
+
+                    //checks for input only every 10 milliseconds for performance issues
+                    await Task.Delay(10);
+                }
+                while (move.IsNull && !stopTask);
+            });
+
+            return move;
         }
 
         public Move NextMove(Sides side)
@@ -42,7 +66,7 @@ namespace MonoChess.Controllers
 
             Move move = Move.Null;
 
-            if (!SelectedPiece.IsNull && Util.MouseClicked(ms.LeftButton, prevMs.LeftButton))
+            if (!SelectedPiece.IsNull)
             {
                 if (AllowedMoves.Any(m => m.TargetPosition == mousePos))
                 {
@@ -52,13 +76,11 @@ namespace MonoChess.Controllers
                 if (!move.IsNull || mousePos == SelectedPiece.Position)
                 {
                     SelectedPiece = Piece.Null;
-                    prevMs = ms;
                     return move;
                 }
             }
 
-            if (Util.MouseClicked(ms.LeftButton, prevMs.LeftButton)
-                && !board[mousePos].IsNull && board[mousePos].Side == side)
+            if (!board[mousePos].IsNull && board[mousePos].Side == side)
             {
                 AllowedMoves.Clear();
                 DisallowedMoves.Clear();
@@ -77,7 +99,6 @@ namespace MonoChess.Controllers
                 }
             }
 
-            prevMs = ms;
             return move;
         }
     }

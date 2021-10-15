@@ -115,7 +115,7 @@ namespace MonoChess
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-            chess.Draw(State);
+            chess.Draw(State, gameTime);
             menu.Draw(State);
 
             spriteBatch.End();
