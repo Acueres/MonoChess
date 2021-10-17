@@ -220,7 +220,7 @@ namespace MonoChess
             if (parameters.PiecesData != null)
             {
                 board.SetPieces(parameters.PiecesData);
-                board.Castling = parameters.CastlingData;
+                board.CastlingData = parameters.CastlingData;
             }
         }
 
@@ -233,7 +233,7 @@ namespace MonoChess
         public void SaveState()
         {
             parameters.PiecesData = board.GetPiecesData();
-            parameters.CastlingData = board.Castling;
+            parameters.CastlingData = board.CastlingData;
             parameters.Save();
         }
     }

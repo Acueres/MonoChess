@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -64,6 +65,11 @@ namespace MonoChess
             IsFixedTimeStep = true;
 
             Content.RootDirectory = "assets";
+
+            if (Debugger.IsAttached)
+            {
+                Tests.Run();
+            }
         }
 
         protected override void Initialize()

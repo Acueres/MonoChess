@@ -18,5 +18,12 @@
         {
             return Piece.Side == target.Side && Piece.Type == Pieces.King && target.Type == Pieces.Rook;
         }
+
+        public bool PromotionCondition()
+        {
+            return Piece.Type == Pieces.Pawn
+                && ((Piece.Side == Sides.White && TargetPosition.Y == 0)
+                || (Piece.Side == Sides.Black && TargetPosition.Y == 7));
+        }
     }
 }

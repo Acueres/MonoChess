@@ -10,6 +10,7 @@ namespace MonoChess.Models
         public Sides Side { get; set; }
         public Position Position { get; set; }
 
+        public bool CanCastle { get => Type == Pieces.Rook || Type == Pieces.King; }
         public bool IsNull { get => Type == Pieces.Null; }
         public Position[] Directions { get => directions[Type]; }
         public bool RangeLimited { get => rangeLimited[Type]; }
