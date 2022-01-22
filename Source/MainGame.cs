@@ -65,11 +65,6 @@ namespace MonoChess
             IsFixedTimeStep = true;
 
             Content.RootDirectory = "assets";
-
-            if (Debugger.IsAttached)
-            {
-                Tests.Run();
-            }
         }
 
         protected override void Initialize()
