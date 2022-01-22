@@ -363,7 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /Assets Editor
 /.gitattributes
-/SharpChess.csproj
-/SharpChess.sln
-/MonoChess.sln
-/MonoChess.csproj
+/Source/chess_icon.ico

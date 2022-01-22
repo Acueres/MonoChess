@@ -413,7 +413,7 @@ namespace MonoChess
 
         public Piece GetKing(Sides side)
         {
-            return pieces.Values.SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
+            return pieces.Values.ToArray().SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
         }
 
         public void SetPieces()
