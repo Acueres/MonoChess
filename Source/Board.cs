@@ -67,9 +67,10 @@ namespace MonoChess
             }
             else
             {
-                if (castling[(int)move.Piece.Side] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
+                int side = move.Piece.Side == Sides.White ? 0 : 1;
+                if (castling[side] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
                 {
-                    castling[(int)move.Piece.Side] = false;
+                    castling[side] = false;
                 }
 
                 removed = MakeMove(move.Piece, move.TargetPosition);
@@ -117,7 +118,7 @@ namespace MonoChess
             this[kingPos] = new Piece(Pieces.King, side, kingPos);
             this[rookPos] = new Piece(Pieces.Rook, side, rookPos);
 
-            castling[(int)side] = false;
+            castling[side == Sides.White ? 0 : 1] = false;
 
             return rook;
         }
@@ -129,9 +130,9 @@ namespace MonoChess
                 ReverseCastlingMove(move.TargetPosition, move.Piece.Side);
                 return;
             }
-            else if (!castling[(int)move.Piece.Side] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
+            else if (!castling[move.Piece.Side == Sides.White ? 0 : 1] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
             {
-                castling[(int)move.Piece.Side] = true;
+                castling[move.Piece.Side == Sides.White ? 0 : 1] = true;
             }
 
             this[move.TargetPosition] = removedPiece;
@@ -165,7 +166,7 @@ namespace MonoChess
             pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
             pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
 
-            castling[(int)side] = true;
+            castling[side == Sides.White ? 0 : 1] = true;
         }
 
         private bool CastlingCandidateMovement(Piece piece)
@@ -250,7 +251,7 @@ namespace MonoChess
         {
             foreach (var dir in piece.Directions)
             {
-                var direction = piece.Side == Sides.Black ? dir * -1 : dir;
+                var direction = dir * (int)piece.Side;
 
                 var targetPos = piece.Position - direction;
 
@@ -294,7 +295,7 @@ namespace MonoChess
                 }
             }
 
-            if (piece.Type == Pieces.King && castling[(int)piece.Side])
+            if (piece.Type == Pieces.King && castling[piece.Side == Sides.White ? 0 : 1])
             {
                 foreach (var castlingMove in GenerateCastlingMoves(piece))
                 {

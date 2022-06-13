@@ -55,7 +55,7 @@ namespace MonoChess
                 [GameState.MainMenu] = main,
                 [GameState.SetupMenu] = setup,
                 [GameState.Pause] = pause,
-                [GameState.Endgame] = endgame
+                [GameState.End] = endgame
             };
         }
 

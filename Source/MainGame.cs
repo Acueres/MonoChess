@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -25,8 +24,9 @@ namespace MonoChess
 
     public enum Sides
     {
-        White,
-        Black
+        White = 1,
+        Null = 0,
+        Black = -1
     }
 
     public enum GameState
@@ -35,7 +35,7 @@ namespace MonoChess
         SetupMenu,
         Running,
         Pause,
-        Endgame
+        End
     }
 
     public class MainGame : Game

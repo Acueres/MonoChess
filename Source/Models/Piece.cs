@@ -6,12 +6,14 @@ namespace MonoChess.Models
 {
     public struct Piece
     {
-        public Pieces Type { get; set; }
-        public Sides Side { get; set; }
+        private readonly sbyte data = 0;
+
+        public Pieces Type { get => byteToType[(byte)Math.Abs(data)]; }
+        public Sides Side { get => (Sides)Math.Sign(data); }
         public Position Position { get; set; }
 
         public bool CanCastle { get => Type == Pieces.Rook || Type == Pieces.King; }
-        public bool IsNull { get => Type == Pieces.Null; }
+        public bool IsNull { get => data == 0; }
         public Position[] Directions { get => directions[Type]; }
         public bool RangeLimited { get => rangeLimited[Type]; }
         public int Score { get => scores[Type]; }
@@ -19,6 +21,7 @@ namespace MonoChess.Models
         public static Piece Null { get; } = new();
 
         readonly static Dictionary<Pieces, Position[]> directions = new();
+
         readonly static Dictionary<Pieces, bool> rangeLimited = new()
         {
             [Pieces.Pawn] = true,
@@ -28,8 +31,10 @@ namespace MonoChess.Models
             [Pieces.Rook] = false,
             [Pieces.Queen] = false
         };
+
         readonly static Dictionary<Pieces, int> scores = new()
         {
+            [Pieces.Null] = 0,
             [Pieces.Pawn] = 1,
             [Pieces.Knight] = 3,
             [Pieces.Bishop] = 3,
@@ -37,12 +42,14 @@ namespace MonoChess.Models
             [Pieces.Queen] = 9,
             [Pieces.King] = 1000
         };
+
+        readonly static Dictionary<byte, Pieces> byteToType = new();
+
         readonly static Dictionary<int, string> names = new();
 
         public Piece(Pieces type, Sides side, Position position)
         {
-            Type = type;
-            Side = side;
+            data = (sbyte)((int)side * (int)type);
             Position = position;
         }
 
@@ -66,13 +73,20 @@ namespace MonoChess.Models
             directions.Add(Pieces.Bishop, diagonal);
             directions.Add(Pieces.Knight, knightMoves);
 
+            var pieces = Enum.GetValues(typeof(Pieces)).Cast<Pieces>().ToArray();
+
             foreach (var side in new Sides[] {Sides.White, Sides.Black })
             {
-                foreach (var type in Enum.GetValues(typeof(Pieces)).Cast<Pieces>())
+                foreach (var type in pieces)
                 {
                     if (type == Pieces.Null) continue;
                     names.Add(HashCode.Combine(type, side), (side == Sides.White ? "w" : "b") + "_" + type.ToString().ToLower());
                 }
+            }
+
+            for (byte b = 0; b < pieces.Length; b++)
+            {
+                byteToType.Add(b, pieces[b]);
             }
         }
 

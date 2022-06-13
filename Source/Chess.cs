@@ -45,7 +45,7 @@ namespace MonoChess
         readonly Board board = new();
 
         Task<Move> nextMoveTask;
-        Sides currentSide;
+        Sides currentSide = Sides.White;
         ChessState state;
         Move move = Move.Null;
         bool waiting;
@@ -90,11 +90,11 @@ namespace MonoChess
 
         public async Task Update()
         {
-            if (waiting || game.State == GameState.Endgame) return;
+            if (waiting || game.State == GameState.End) return;
 
             if (board.DetectCheckmate(currentSide))
             {
-                game.State = GameState.Endgame;
+                game.State = GameState.End;
                 return;
             }
 
@@ -208,7 +208,7 @@ namespace MonoChess
                 spriteBatch.Draw(shading, new Rectangle(0, 0, Board.SIZE, Board.SIZE), Color.White);
             }
 
-            if (gameState == GameState.Endgame)
+            if (gameState == GameState.End)
             {
                 spriteBatch.DrawString(fonts[24], Util.ReverseSide(currentSide).ToString() + " Victory",
                     new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 120), Color.AntiqueWhite);

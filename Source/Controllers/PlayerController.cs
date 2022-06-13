@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 using MonoChess.Models;
@@ -59,10 +60,8 @@ namespace MonoChess.Controllers
         {
             MouseState ms = Mouse.GetState();
 
-            var mousePos = (new Position(ms.X, ms.Y) / tileSize);
-
-            mousePos.X = Math.Clamp(mousePos.X, 0, 7);
-            mousePos.Y = Math.Clamp(mousePos.Y, 0, 7);
+            var mouseVec = (new Vector2(ms.X, ms.Y) / tileSize);
+            var mousePos = new Position(Math.Clamp((int)mouseVec.X, 0, 7), Math.Clamp((int)mouseVec.Y, 0, 7));
 
             Move move = Move.Null;
 

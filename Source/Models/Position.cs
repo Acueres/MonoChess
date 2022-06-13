@@ -4,15 +4,15 @@ namespace MonoChess.Models
 {
     public struct Position
     {
-        public int X { get; set; } //rank
-        public int Y { get; set; } //file
+        public sbyte X { get; set; } //rank
+        public sbyte Y { get; set; } //file
 
         public bool Orthogonal { get => Math.Abs(X) + Math.Abs(Y) == 1; }
 
         public Position(int x, int y)
         {
-            X = x;
-            Y = y;
+            X = (sbyte)x;
+            Y = (sbyte)y;
         }
 
         public bool InBounds(int lower, int upper)
@@ -35,10 +35,10 @@ namespace MonoChess.Models
             return new Position(val.X * multiplier, val.Y * multiplier);
         }
 
-        public static Position operator / (Position val, int divider)
+        public static Position operator / (Position val, sbyte divisor)
         {
-            val.X /= divider;
-            val.Y /= divider;
+            val.X /= divisor;
+            val.Y /= divisor;
 
             return val;
         }

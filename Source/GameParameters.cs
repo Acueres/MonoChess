@@ -9,7 +9,7 @@ namespace MonoChess
 {
     public class GameParameters
     {
-        public Sides PlayerSide { get; set; }
+        public Sides PlayerSide { get; set; } = Sides.White;
         public bool SinglePlayer { get; set; }
         public bool ShowGrid { get; set; }
         public Algorithm AlgorithmType { get; set; }
