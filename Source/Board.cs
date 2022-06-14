@@ -10,12 +10,39 @@ namespace MonoChess
     {
         public const int SIZE = 504;
 
-        public bool[] CastlingData 
-        { 
-            get => castling;
-            set => Array.Copy(value, castling, value.Length < 2 ? value.Length : 2);
+        bool whiteCastling = true;
+        bool blackCastling = true;
+
+        public void SetCastlingData(bool whiteCastling, bool blackCastling)
+        {
+            this.whiteCastling = whiteCastling;
+            this.blackCastling = blackCastling;
         }
-        readonly bool[] castling = { true, true };
+
+        public bool[] GetCastlingData()
+        {
+            return new bool[] { whiteCastling, blackCastling };
+        }
+
+        public void SetCastling(Sides side, bool value)
+        {
+            if (side == Sides.White)
+            {
+                whiteCastling = value;
+            }
+            else
+            {
+                blackCastling = value;
+            }
+        }
+
+        public bool GetCastling(Sides side)
+        {
+            if (side == Sides.White)
+                return whiteCastling;
+
+            return blackCastling;
+        }
 
         Dictionary<Position, Piece> pieces = new();
 
@@ -32,7 +59,7 @@ namespace MonoChess
         public Board(Board board)
         {
             pieces = new(board.pieces);
-            Array.Copy(castling, board.castling, 2);
+            board.SetCastlingData(whiteCastling, blackCastling);
         }
 
         public Piece this[Position pos]
@@ -67,10 +94,9 @@ namespace MonoChess
             }
             else
             {
-                int side = move.Piece.Side == Sides.White ? 0 : 1;
-                if (castling[side] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
+                if (GetCastling(move.Piece.Side) && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
                 {
-                    castling[side] = false;
+                    SetCastling(move.Piece.Side, false);
                 }
 
                 removed = MakeMove(move.Piece, move.TargetPosition);
@@ -118,7 +144,7 @@ namespace MonoChess
             this[kingPos] = new Piece(Pieces.King, side, kingPos);
             this[rookPos] = new Piece(Pieces.Rook, side, rookPos);
 
-            castling[side == Sides.White ? 0 : 1] = false;
+            SetCastling(side, false);
 
             return rook;
         }
@@ -130,9 +156,9 @@ namespace MonoChess
                 ReverseCastlingMove(move.TargetPosition, move.Piece.Side);
                 return;
             }
-            else if (!castling[move.Piece.Side == Sides.White ? 0 : 1] && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
+            else if (!GetCastling(move.Piece.Side) && move.Piece.CanCastle && CastlingCandidateMovement(move.Piece))
             {
-                castling[move.Piece.Side == Sides.White ? 0 : 1] = true;
+                SetCastling(move.Piece.Side, true);
             }
 
             this[move.TargetPosition] = removedPiece;
@@ -166,7 +192,7 @@ namespace MonoChess
             pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
             pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
 
-            castling[side == Sides.White ? 0 : 1] = true;
+            SetCastling(side, true);
         }
 
         private bool CastlingCandidateMovement(Piece piece)
@@ -295,7 +321,7 @@ namespace MonoChess
                 }
             }
 
-            if (piece.Type == Pieces.King && castling[piece.Side == Sides.White ? 0 : 1])
+            if (piece.Type == Pieces.King && GetCastling(piece.Side))
             {
                 foreach (var castlingMove in GenerateCastlingMoves(piece))
                 {
@@ -420,8 +446,8 @@ namespace MonoChess
         public void SetPieces()
         {
             pieces.Clear();
-            castling[0] = true;
-            castling[1] = true;
+
+            SetCastlingData(true, true);
 
             var arrangementOrder = new Pieces[]
             {
@@ -508,7 +534,7 @@ namespace MonoChess
                     if (pieces.ContainsKey(pos))
                     {
                         //pieces coded by their enum value, white positive, black negative
-                        data[i] = (int)pieces[pos].Type * (pieces[pos].Side == Sides.White ? 1 : -1);
+                        data[i] = pieces[pos].Data;
                     }
 
                     i++;

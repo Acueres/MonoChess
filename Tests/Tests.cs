@@ -49,14 +49,14 @@ namespace Tests
             Assert.True(removed.Type == Pieces.Rook);
             Assert.True(board[new(2, 7)].Type == Pieces.King);
             Assert.True(board[new(3, 7)].Type == Pieces.Rook);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             board.ReverseMove(move1, removed);
             Assert.True(board[new(2, 7)].Type == Pieces.Null);
             Assert.True(board[new(3, 7)].Type == Pieces.Null);
             Assert.True(board[new(4, 7)].Type == Pieces.King);
             Assert.True(board[new(0, 7)].Type == Pieces.Rook);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
 
             //testing castling to the right
             Move move2 = new(board[new(4, 7)], new(7, 7));
@@ -64,72 +64,58 @@ namespace Tests
             Assert.True(removed.Type == Pieces.Rook);
             Assert.True(board[new(6, 7)].Type == Pieces.King);
             Assert.True(board[new(5, 7)].Type == Pieces.Rook);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             board.ReverseMove(move2, removed);
             Assert.True(board[new(6, 7)].Type == Pieces.Null);
             Assert.True(board[new(5, 7)].Type == Pieces.Null);
             Assert.True(board[new(4, 7)].Type == Pieces.King);
             Assert.True(board[new(7, 7)].Type == Pieces.Rook);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
 
             //testing that no castling is possible after moving king
             Move move3 = new(board[new(4, 7)], new(4, 6));
             board.MakeMove(move3, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
             Move move4 = new(board[new(4, 6)], new(4, 7));
             board.MakeMove(move4, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             board.ReverseMove(move4, Piece.Null);
             board.ReverseMove(move3, Piece.Null);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
 
             //testing that no castling is possible after moving both rooks
             Move move5 = new(board[new(0, 7)], new(0, 6));
             board.MakeMove(move5, out _);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
 
             Move move6 = new(board[new(7, 7)], new(7, 6));
             board.MakeMove(move6, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             Move move7 = new(board[new(7, 6)], new(7, 7));
             board.MakeMove(move7, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             Move move8 = new(board[new(0, 6)], new(0, 7));
             board.MakeMove(move8, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
 
             board.ReverseMove(move8, Piece.Null);
             board.ReverseMove(move7, Piece.Null);
             board.ReverseMove(move6, Piece.Null);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
             board.ReverseMove(move5, Piece.Null);
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
 
             board[new(7, 7)] = Piece.Null;
-            Assert.True(board.CastlingData[0]);
+            Assert.True(board.GetCastling(Sides.White));
             Move move9 = new(board[new(0, 7)], new(1, 7));
             board.MakeMove(move9, out _);
-            Assert.True(!board.CastlingData[0]);
+            Assert.True(!board.GetCastling(Sides.White));
             board.ReverseMove(move9, Piece.Null);
-            Assert.True(board.CastlingData[0]);
-
-            //testing castling data correct copying
-            Assert.True(board.CastlingData[1]);
-            Assert.True(board.CastlingData.Length == 2);
-            bool[] incorrectCastlingData = { true, false, false };
-            board.CastlingData = incorrectCastlingData;
-            Assert.True(!board.CastlingData[1]);
-            Assert.True(board.CastlingData.Length == 2);
-
-            incorrectCastlingData = new bool[] { false };
-            board.CastlingData = incorrectCastlingData;
-            Assert.True(!board.CastlingData[0]);
-            Assert.True(!board.CastlingData[1]);
-            Assert.True(board.CastlingData.Length == 2);
+            Assert.True(board.GetCastling(Sides.White));
         }
 
         [Test]

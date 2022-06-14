@@ -11,6 +11,7 @@ namespace MonoChess.Models
         public Pieces Type { get => byteToType[(byte)Math.Abs(data)]; }
         public Sides Side { get => (Sides)Math.Sign(data); }
         public Position Position { get; set; }
+        public sbyte Data { get => data; }
 
         public bool CanCastle { get => Type == Pieces.Rook || Type == Pieces.King; }
         public bool IsNull { get => data == 0; }

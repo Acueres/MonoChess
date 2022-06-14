@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
@@ -220,8 +217,13 @@ namespace MonoChess
             if (parameters.PiecesData != null)
             {
                 board.SetPieces(parameters.PiecesData);
-                board.CastlingData = parameters.CastlingData;
+                board.SetCastlingData(parameters.CastlingData[0], parameters.CastlingData[1]);
             }
+        }
+
+        public void SetCurrentSide(Sides side)
+        {
+            currentSide = side;
         }
 
         public void EraseState()
@@ -232,8 +234,9 @@ namespace MonoChess
 
         public void SaveState()
         {
+            parameters.CurrentSide = currentSide;
             parameters.PiecesData = board.GetPiecesData();
-            parameters.CastlingData = board.CastlingData;
+            parameters.CastlingData = board.GetCastlingData();
             parameters.Save();
         }
     }

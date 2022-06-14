@@ -24,8 +24,8 @@ namespace MonoChess
 
     public enum Sides
     {
-        White = 1,
         Null = 0,
+        White = 1,
         Black = -1
     }
 
@@ -42,12 +42,12 @@ namespace MonoChess
     {
         public GameState State { get; set; }
 
-        GraphicsDeviceManager graphics;
+        readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         Menu menu;
         Chess chess;
-        GameParameters parameters = new();
+        readonly GameParameters parameters = new();
 
         KeyboardState prevKs = Keyboard.GetState();
 

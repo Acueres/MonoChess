@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using MonoChess.GUI;
 using MonoChess.Algorithms;
@@ -107,6 +104,7 @@ namespace MonoChess
                     if (parameters.Load())
                     {
                         chess.LoadBoardState();
+                        chess.SetCurrentSide(parameters.CurrentSide);
                         game.State = GameState.Running;
                     }
                 }
