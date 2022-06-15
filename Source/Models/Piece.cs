@@ -54,6 +54,12 @@ namespace MonoChess.Models
             Position = position;
         }
 
+        public Piece(sbyte data, Position position)
+        {
+            this.data = data;
+            Position = position;
+        }
+
         static Piece()
         {
             var orthogonal = new Position[] { new(0, 1), new(0, -1), new(1, 0), new(-1, 0) };
@@ -76,19 +82,27 @@ namespace MonoChess.Models
 
             var pieces = Enum.GetValues(typeof(Pieces)).Cast<Pieces>().ToArray();
 
-            foreach (var side in new Sides[] {Sides.White, Sides.Black })
+            foreach (var type in pieces)
             {
-                foreach (var type in pieces)
-                {
-                    if (type == Pieces.Null) continue;
-                    names.Add(HashCode.Combine(type, side), (side == Sides.White ? "w" : "b") + "_" + type.ToString().ToLower());
-                }
+                if (type == Pieces.Null) continue;
+                names.Add(HashCode.Combine(type, Sides.White), "w_" + type.ToString().ToLower());
+                names.Add(HashCode.Combine(type, Sides.Black), "b_" + type.ToString().ToLower());
             }
 
             for (byte b = 0; b < pieces.Length; b++)
             {
                 byteToType.Add(b, pieces[b]);
             }
+        }
+
+        public static Pieces GetType(sbyte value)
+        {
+            return byteToType[(byte)Math.Abs(value)];
+        }
+
+        public static Sides GetSide(sbyte value)
+        {
+            return (Sides)Math.Sign(value);
         }
 
         public static bool operator ==(Piece p1, Piece p2)

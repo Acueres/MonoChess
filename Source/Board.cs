@@ -9,42 +9,12 @@ namespace MonoChess
     public class Board
     {
         public const int SIZE = 504;
+        const int BOARD_SIZE = 8;
 
         bool whiteCastling = true;
         bool blackCastling = true;
 
-        public void SetCastlingData(bool whiteCastling, bool blackCastling)
-        {
-            this.whiteCastling = whiteCastling;
-            this.blackCastling = blackCastling;
-        }
-
-        public bool[] GetCastlingData()
-        {
-            return new bool[] { whiteCastling, blackCastling };
-        }
-
-        public void SetCastling(Sides side, bool value)
-        {
-            if (side == Sides.White)
-            {
-                whiteCastling = value;
-            }
-            else
-            {
-                blackCastling = value;
-            }
-        }
-
-        public bool GetCastling(Sides side)
-        {
-            if (side == Sides.White)
-                return whiteCastling;
-
-            return blackCastling;
-        }
-
-        Dictionary<Position, Piece> pieces = new();
+        readonly sbyte[] data = new sbyte[BOARD_SIZE * BOARD_SIZE];
 
         public Board()
         {
@@ -58,28 +28,14 @@ namespace MonoChess
 
         public Board(Board board)
         {
-            pieces = new(board.pieces);
+            Array.Copy(board.data, data, BOARD_SIZE * BOARD_SIZE);
             board.SetCastlingData(whiteCastling, blackCastling);
         }
 
         public Piece this[Position pos]
         {
-            get => pieces.ContainsKey(pos) ? pieces[pos] : Piece.Null;
-            set
-            {
-                if (value.Type == Pieces.Null)
-                {
-                    pieces.Remove(pos);
-                }
-                else if (pieces.ContainsKey(pos))
-                {
-                    pieces[pos] = value;
-                }
-                else
-                {
-                    pieces.Add(pos, value);
-                }
-            }
+            get => new(data[pos.X + (pos.Y * BOARD_SIZE)], pos);
+            set => data[pos.X + (pos.Y * BOARD_SIZE)] = value.Data;
         }
 
         public void MakeMove(Move move, out Piece removed)
@@ -186,11 +142,11 @@ namespace MonoChess
                 oldKingPos = new(6, file);
             }
 
-            pieces.Remove(oldKingPos);
-            pieces.Remove(oldRookPos);
+            this[oldKingPos] = Piece.Null;
+            this[oldRookPos] = Piece.Null;
 
-            pieces.Add(kingPos, new Piece(Pieces.King, side, kingPos));
-            pieces.Add(rookPos, new Piece(Pieces.Rook, side, rookPos));
+            this[kingPos] = new Piece(Pieces.King, side, kingPos);
+            this[rookPos] = new Piece(Pieces.Rook, side, rookPos);
 
             SetCastling(side, true);
         }
@@ -205,9 +161,19 @@ namespace MonoChess
                 return true;
             }
 
-            var rooks = pieces.Values.Where(p => p.Side == side && p.Type == Pieces.Rook).ToArray();
+            Span<Piece> rooks = stackalloc Piece[2];
+            for (int i = 0, rooksIndex = 0; i < data.Length && rooksIndex < 2; i++)
+            {
+                if (data[i] == 0) continue;
 
-            if (rooks.Length == 1)
+                if (Piece.GetSide(data[i]) == side && Piece.GetType(data[i]) == Pieces.Rook)
+                {
+                    rooks[rooksIndex] = new Piece(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
+                    rooksIndex++;
+                }
+            }
+
+            if (rooks[1].IsNull)
             {
                 return true;
             }
@@ -235,8 +201,11 @@ namespace MonoChess
         public int GetScore(Sides side)
         {
             int res = 0;
-            foreach (var piece in pieces.Values)
+            for (int i = 0; i < data.Length; i++)
             {
+                if (data[i] == 0) continue;
+
+                Piece piece = new(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
                 res += piece.Score * (piece.Side == side ? 1 : -1);
             }
 
@@ -245,8 +214,11 @@ namespace MonoChess
 
         public IEnumerable<Piece> GetPieces(Sides side)
         {
-            foreach (var piece in pieces.Values.ToArray())
+            for (int i = 0; i < data.Length; i++)
             {
+                if (data[i] == 0) continue;
+
+                Piece piece = new(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
                 if (piece.Side == side)
                 {
                     yield return piece;
@@ -256,8 +228,11 @@ namespace MonoChess
 
         public IEnumerable<Piece> GetPieces()
         {
-            foreach (var piece in pieces.Values)
+            for (int i = 0; i < data.Length; i++)
             {
+                if (data[i] == 0) continue;
+
+                Piece piece = new(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
                 yield return piece;
             }
         }
@@ -281,16 +256,16 @@ namespace MonoChess
 
                 var targetPos = piece.Position - direction;
 
-                while (targetPos.InBounds(0, 8))
+                while (targetPos.InBounds(0, BOARD_SIZE))
                 {
-                    if (pieces.ContainsKey(targetPos))
+                    if (!this[targetPos].IsNull)
                     {
                         if (piece.Type == Pieces.Pawn && direction.Orthogonal)
                         {
                             break; //prevent pawn straight attack
                         }
 
-                        if (pieces[targetPos].Side != piece.Side)
+                        if (this[targetPos].Side != piece.Side)
                         {
                             yield return new Move(piece, targetPos);
                         }
@@ -307,7 +282,7 @@ namespace MonoChess
                     if (piece.RangeLimited)
                     {
                         //allow pawn to move two tiles from initial rank
-                        if (piece.Type == Pieces.Pawn && !pieces.ContainsKey(targetPos - direction) &&
+                        if (piece.Type == Pieces.Pawn && (this[targetPos - direction].IsNull) &&
                             ((piece.Side == Sides.White && piece.Position.Y == 6) ||
                             (piece.Side == Sides.Black && piece.Position.Y == 1)))
                         {
@@ -440,12 +415,52 @@ namespace MonoChess
 
         public Piece GetKing(Sides side)
         {
-            return pieces.Values.ToArray().SingleOrDefault(p => p.Type == Pieces.King && p.Side == side);
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == 0) continue;
+
+                if (Piece.GetType(data[i]) == Pieces.King && Piece.GetSide(data[i]) == side)
+                {
+                    return new Piece(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
+                }
+            }
+            return Piece.Null;
+        }
+
+        public void SetCastlingData(bool whiteCastling, bool blackCastling)
+        {
+            this.whiteCastling = whiteCastling;
+            this.blackCastling = blackCastling;
+        }
+
+        public bool[] GetCastlingData()
+        {
+            return new bool[] { whiteCastling, blackCastling };
+        }
+
+        public void SetCastling(Sides side, bool value)
+        {
+            if (side == Sides.White)
+            {
+                whiteCastling = value;
+            }
+            else
+            {
+                blackCastling = value;
+            }
+        }
+
+        public bool GetCastling(Sides side)
+        {
+            if (side == Sides.White)
+                return whiteCastling;
+
+            return blackCastling;
         }
 
         public void SetPieces()
         {
-            pieces.Clear();
+            Array.Clear(data);
 
             SetCastlingData(true, true);
 
@@ -461,14 +476,15 @@ namespace MonoChess
                 Pieces.Rook
             };
 
-            foreach (var side in new Sides[] { Sides.Black, Sides.White })
+            Span<Sides> sides = stackalloc Sides[] { Sides.Black, Sides.White };
+            foreach (var side in sides)
             {
                 int y = side == Sides.Black ? 0 : 7;
 
                 for (int x = 0; x < 8; x++)
                 {
                     var pos = new Position(x, y);
-                    pieces.Add(pos, new Piece(arrangementOrder[x], side, pos));
+                    this[pos] = new Piece(arrangementOrder[x], side, pos);
                 }
 
                 if (side == Sides.Black)
@@ -483,12 +499,9 @@ namespace MonoChess
                 for (int x = 0; x < 8; x++)
                 {
                     var pos = new Position(x, y);
-                    pieces.Add(pos, new Piece(Pieces.Pawn, side, pos));
+                    this[pos] = new Piece(Pieces.Pawn, side, pos);
                 }
             }
-
-            //ensuring the ai chooses more different types of pieces
-            pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
         }
 
         public void SetPieces(int[] numData)
@@ -511,37 +524,17 @@ namespace MonoChess
 
         private void SetPieces(Piece[] piecesData)
         {
-            pieces.Clear();
+            Array.Clear(data);
 
             foreach (var piece in piecesData)
             {
-                pieces.Add(piece.Position, piece);
+                this[piece.Position] = piece;
             }
-
-            pieces = pieces.OrderBy(x => new Random().Next()).ToDictionary(item => item.Key, item => item.Value);
         }
 
         public int[] GetPiecesData()
         {
-            int[] data = new int[8 * 8];
-
-            int i = 0;
-            for (int y = 0; y < 8; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-                    var pos = new Position(x, y);
-                    if (pieces.ContainsKey(pos))
-                    {
-                        //pieces coded by their enum value, white positive, black negative
-                        data[i] = pieces[pos].Data;
-                    }
-
-                    i++;
-                }
-            }
-
-            return data;
+            return data.Select(b => (int)b).ToArray();
         }
     }
 }
