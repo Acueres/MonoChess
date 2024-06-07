@@ -64,7 +64,7 @@ namespace MonoChess
             IsMouseVisible = true;
             IsFixedTimeStep = true;
 
-            Content.RootDirectory = "assets";
+            Content.RootDirectory = "Assets";
         }
 
         protected override void Initialize()
@@ -126,14 +126,14 @@ namespace MonoChess
 
         private Dictionary<string, Texture2D> LoadTextures()
         {
-            var paths = Directory.GetFiles("assets/pieces/", ".").ToArray();
+            var paths = Directory.GetFiles("Assets/Pieces/", ".").ToArray();
             Dictionary<string, Texture2D> textures = new();
 
             foreach (var path in paths)
             {
                 var textureName = path.Split("/", 2)[^1].Split("/")[1].Split(".")[0];
 
-                textures.Add(textureName, Content.Load<Texture2D>("pieces/" + textureName));
+                textures.Add(textureName, Content.Load<Texture2D>("Pieces/" + textureName));
             }
 
             return textures;

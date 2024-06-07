@@ -1,5 +1,3 @@
-using NUnit.Framework;
-
 using MonoChess;
 using MonoChess.Models;
 
@@ -7,7 +5,7 @@ namespace Tests
 {
     public class Tests
     {
-        [Test]
+        [Fact]
         public void TestBoard()
         {
             var board = new Board(new Piece[]
@@ -33,7 +31,7 @@ namespace Tests
             Assert.True(board[new(0, 3)] == move2.Piece);
         }
 
-        [Test]
+        [Fact]
         public void TestCastling()
         {
             var board = new Board(new Piece[]
@@ -118,7 +116,7 @@ namespace Tests
             Assert.True(board.GetCastling(Sides.White));
         }
 
-        [Test]
+        [Fact]
         public void TestPromotion()
         {
             Piece whitePawn = new(Pieces.Pawn, Sides.White, new(0, 1));

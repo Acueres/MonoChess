@@ -33,7 +33,6 @@ namespace MonoChess
             [5] = "Very Hard"
         };
 
-
         public Menu(MainGame game, GraphicsDevice graphics, Chess chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.spriteBatch = spriteBatch;
