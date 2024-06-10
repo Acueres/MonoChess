@@ -1,6 +1,5 @@
-﻿using System;
-
-using MonoChess.Models;
+﻿using MonoChess.Models;
+using MonoChess.Enums;
 
 namespace MonoChess.Algorithms
 {

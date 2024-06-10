@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
+using MonoChess.Enums;
 using MonoChess.Controllers;
 using MonoChess.Models;
 
 namespace MonoChess
 {
-    public enum ChessState
-    {
-        Opening,
-        Default,
-        WhiteCheck,
-        BlackCheck
-    }
-
     public class Chess
     {
         readonly MainGame game;

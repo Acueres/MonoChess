@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 using MonoChess.Models;
+using MonoChess.Enums;
 
 namespace MonoChess.Controllers
 {

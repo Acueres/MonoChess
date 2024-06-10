@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using MonoChess.Models;
 using MonoChess.Algorithms;
-
+using MonoChess.Enums;
 
 namespace MonoChess.Controllers
 {
     class AIController : IController
     {
         readonly Board board;
-        readonly Dictionary<Algorithm, IAlgorithm> algorithms;
+        readonly Dictionary<AlgorithmType, IAlgorithm> algorithms;
 
         public AIController(Board board)
         {
             this.board = board;
             algorithms = new()
             {
-                [Algorithm.AlphaBeta] = new AlphaBeta(),
-                [Algorithm.NegaMax] = new NegaMax(),
-                [Algorithm.Randomized] = new Randomized()
+                [AlgorithmType.AlphaBeta] = new AlphaBeta(),
+                [AlgorithmType.Negamax] = new NegaMax(),
+                [AlgorithmType.Random] = new Randomized()
             };
         }
 

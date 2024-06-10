@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+using MonoChess.Enums;
 using MonoChess.GUI;
-using MonoChess.Algorithms;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -32,6 +31,8 @@ namespace MonoChess
             [4] = "Hard",
             [5] = "Very Hard"
         };
+
+        const int nAlgorithms = 3;
 
         public Menu(MainGame game, GraphicsDevice graphics, Chess chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
@@ -202,7 +203,7 @@ namespace MonoChess
             };
             algorithm.Action = () =>
             {
-                parameters.AlgorithmType = (Algorithm)Util.GetNextIndex((int)parameters.AlgorithmType, (int)Algorithm.Count);
+                parameters.AlgorithmType = (AlgorithmType)Util.GetNextIndex((int)parameters.AlgorithmType, nAlgorithms);
                 algorithm.Text = parameters.AlgorithmType.ToString();
             };
             setup.Add(algorithm);

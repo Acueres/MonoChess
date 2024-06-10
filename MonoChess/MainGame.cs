@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -8,36 +7,10 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
+using MonoChess.Enums;
 
 namespace MonoChess
 {
-    public enum Pieces
-    {
-        Null,
-        Pawn,
-        Knight,
-        Bishop,
-        Rook,
-        Queen,
-        King
-    }
-
-    public enum Sides
-    {
-        Null = 0,
-        White = 1,
-        Black = -1
-    }
-
-    public enum GameState
-    {
-        MainMenu,
-        SetupMenu,
-        Running,
-        Pause,
-        End
-    }
-
     public class MainGame : Game
     {
         public GameState State { get; set; }

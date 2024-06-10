@@ -1,4 +1,6 @@
-﻿namespace MonoChess.Models
+﻿using MonoChess.Enums;
+
+namespace MonoChess.Models
 {
     public struct Move
     {

@@ -3,6 +3,7 @@ using System.Reflection;
 
 using Newtonsoft.Json;
 
+using MonoChess.Enums;
 using MonoChess.Algorithms;
 
 namespace MonoChess
@@ -13,7 +14,7 @@ namespace MonoChess
         public Sides CurrentSide { get; set; } = Sides.White;
         public bool SinglePlayer { get; set; }
         public bool ShowGrid { get; set; }
-        public Algorithm AlgorithmType { get; set; }
+        public AlgorithmType AlgorithmType { get; set; }
         public int Depth { get; set; } = 3;
         public int[] PiecesData { get; set; }
         public bool[] CastlingData { get; set; }

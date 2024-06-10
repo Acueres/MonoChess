@@ -1,5 +1,6 @@
 using MonoChess;
 using MonoChess.Models;
+using MonoChess.Enums;
 
 namespace Tests
 {

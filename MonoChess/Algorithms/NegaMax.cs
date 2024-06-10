@@ -2,6 +2,7 @@
 using System.Diagnostics;
 
 using MonoChess.Models;
+using MonoChess.Enums;
 
 
 namespace MonoChess.Algorithms
