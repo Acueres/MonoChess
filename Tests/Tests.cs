@@ -9,11 +9,11 @@ namespace Tests
         [Fact]
         public void TestBoard()
         {
-            var board = new Board(new Piece[]
-            {
+            var board = new Board(
+            [
                 new(Pieces.Pawn, Sides.White, new(1, 6)),
                 new(Pieces.Pawn, Sides.Black, new(0, 3))
-            });
+            ]);
 
             Move move1 = new(board[new(1, 6)], new(1, 4));
             board.MakeMove(move1, out _);
@@ -35,12 +35,12 @@ namespace Tests
         [Fact]
         public void TestCastling()
         {
-            var board = new Board(new Piece[]
-            {
+            var board = new Board(
+            [
                 new(Pieces.King, Sides.White, new(4, 7)),
                 new(Pieces.Rook, Sides.White, new(0, 7)),
                 new(Pieces.Rook, Sides.White, new(7, 7))
-            });
+            ]);
 
             //testing castling to the left
             Move move1 = new(board[new(4, 7)], new(0, 7));
@@ -123,11 +123,11 @@ namespace Tests
             Piece whitePawn = new(Pieces.Pawn, Sides.White, new(0, 1));
             Piece blackPawn = new(Pieces.Pawn, Sides.Black, new(0, 6));
 
-            var board = new Board(new Piece[]
-            {
+            var board = new Board(
+            [
                 whitePawn,
                 blackPawn
-            });
+            ]);
 
             Move whitePawnMove = new(whitePawn, new(0, 0));
             board.MakeMove(whitePawnMove, out _);

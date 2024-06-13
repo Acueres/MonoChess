@@ -2,26 +2,20 @@
 
 namespace MonoChess.Models
 {
-    public struct Move
+    public struct Move(Piece piece, Position target)
     {
-        public Piece Piece { get; set; }
-        public Position TargetPosition { get; set; }
-        public bool IsNull { get => Piece.IsNull;  }
+        public Piece Piece { get; set; } = piece;
+        public Position TargetPosition { get; set; } = target;
+        public readonly bool IsNull => Piece.IsNull;
 
         public static Move Null { get; } = new();
 
-        public Move(Piece piece, Position target)
-        {
-            Piece = piece;
-            TargetPosition = target;
-        }
-
-        public bool CastlingCondition(Piece target)
+        public readonly bool CastlingCondition(Piece target)
         {
             return Piece.Side == target.Side && Piece.Type == Pieces.King && target.Type == Pieces.Rook;
         }
 
-        public bool PromotionCondition()
+        public readonly bool PromotionCondition()
         {
             return Piece.Type == Pieces.Pawn
                 && ((Piece.Side == Sides.White && TargetPosition.Y == 0)

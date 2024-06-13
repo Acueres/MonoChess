@@ -14,8 +14,8 @@ namespace MonoChess.Controllers
     class PlayerController : IController
     {
         public Piece SelectedPiece { get; set; } = Piece.Null;
-        public List<Move> AllowedMoves { get; private set; } = new();
-        public List<Move> DisallowedMoves { get; private set; } = new();
+        public List<Move> AllowedMoves { get; private set; } = [];
+        public List<Move> DisallowedMoves { get; private set; } = [];
         public bool Interrupt() => stopTask = true;
 
         readonly Board board;

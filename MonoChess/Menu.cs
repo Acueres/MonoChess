@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
+using MonoChess.Models;
 
 
 namespace MonoChess
@@ -22,7 +23,7 @@ namespace MonoChess
 
         MouseState previousMs = Mouse.GetState();
 
-        readonly int[] depthLevels = { 1, 2, 3, 4, 5 };
+        readonly int[] depthLevels = [1, 2, 3, 4, 5];
         readonly Dictionary<int, string> difficultyLevels = new()
         {
             [1] = "Very Easy",
@@ -34,7 +35,7 @@ namespace MonoChess
 
         const int nAlgorithms = 3;
 
-        public Menu(MainGame game, GraphicsDevice graphics, Chess chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
+        public Menu(MainGame game, GraphicsDevice graphics, ChessEngine chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.spriteBatch = spriteBatch;
 
@@ -80,9 +81,9 @@ namespace MonoChess
             previousMs = ms;
         }
 
-        private void CreateMainMenu(MainGame game, Chess chess, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
+        private void CreateMainMenu(MainGame game, ChessEngine chess, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
         {
-            main = new List<IGUIElement>();
+            main = [];
 
             Label chessLabel = new()
             {
@@ -145,7 +146,7 @@ namespace MonoChess
         private void CreateSetupMenu(MainGame game, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts,
             Dictionary<string, Texture2D> textures, Texture2D buttonBase)
         {
-            setup = new List<IGUIElement>();
+            setup = [];
 
             Label setupLabel = new()
             {
@@ -203,7 +204,7 @@ namespace MonoChess
             };
             algorithm.Action = () =>
             {
-                parameters.AlgorithmType = (AlgorithmType)Util.GetNextIndex((int)parameters.AlgorithmType, nAlgorithms);
+                parameters.AlgorithmType = (AlgorithmType)GetNextIndex((int)parameters.AlgorithmType, nAlgorithms);
                 algorithm.Text = parameters.AlgorithmType.ToString();
             };
             setup.Add(algorithm);
@@ -226,7 +227,7 @@ namespace MonoChess
             };
             difficulty.Action = () =>
             {
-                parameters.Depth = depthLevels[Util.GetNextIndex(parameters.Depth - 1, depthLevels.Length)];
+                parameters.Depth = depthLevels[GetNextIndex(parameters.Depth - 1, depthLevels.Length)];
                 difficulty.Text = difficultyLevels[parameters.Depth];
             };
             setup.Add(difficulty);
@@ -256,10 +257,10 @@ namespace MonoChess
             setup.Add(back);
         }
 
-        private void CreateInGameMenu(MainGame game, Chess chess,
+        private void CreateInGameMenu(MainGame game, ChessEngine chess,
             Dictionary<int, DynamicSpriteFont> fonts)
         {
-            pause = new List<IGUIElement>();
+            pause = [];
 
             Label menuLabel = new()
             {
@@ -311,9 +312,9 @@ namespace MonoChess
             pause.Add(@return);
         }
 
-        private void CreateEndgameMenu(MainGame game, Chess chess, Dictionary<int, DynamicSpriteFont> fonts)
+        private void CreateEndgameMenu(MainGame game, ChessEngine chess, Dictionary<int, DynamicSpriteFont> fonts)
         {
-            endgame = new List<IGUIElement>();
+            endgame = [];
 
             Button abandon = new()
             {
@@ -329,6 +330,16 @@ namespace MonoChess
                 }
             };
             endgame.Add(abandon);
+        }
+
+        static int GetNextIndex(int index, int end)
+        {
+            if (index == end - 1)
+            {
+                return 0;
+            }
+
+            return ++index;
         }
     }
 }

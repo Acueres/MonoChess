@@ -4,9 +4,8 @@ using System.Reflection;
 using Newtonsoft.Json;
 
 using MonoChess.Enums;
-using MonoChess.Algorithms;
 
-namespace MonoChess
+namespace MonoChess.Models
 {
     public class GameParameters
     {

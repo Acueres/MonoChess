@@ -11,7 +11,7 @@ using MonoChess.Models;
 
 namespace MonoChess
 {
-    public class Chess
+    public class ChessEngine
     {
         readonly MainGame game;
 
@@ -26,7 +26,7 @@ namespace MonoChess
         readonly Texture2D moveHighlightTile;
         readonly Dictionary<int, DynamicSpriteFont> fonts;
         readonly Dictionary<string, Texture2D> textures;
-        readonly string[] filesChars = { "a", "b", "c", "d", "e", "f", "g", "h" };
+        readonly string[] filesChars = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
         readonly GameParameters parameters;
         readonly AIController aiController;
@@ -41,7 +41,7 @@ namespace MonoChess
         bool PlayerTurn { get => currentSide == parameters.PlayerSide || !parameters.SinglePlayer; }
         double calculationTime;
 
-        public Chess(MainGame game, GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
+        public ChessEngine(MainGame game, GraphicsDevice graphics, SpriteBatch spriteBatch, GameParameters parameters,
             Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
         {
             this.game = game;

@@ -10,20 +10,20 @@ namespace MonoChess.Models
     {
         private readonly sbyte data = 0;
 
-        public Pieces Type { get => byteToType[(byte)Math.Abs(data)]; }
-        public Sides Side { get => (Sides)Math.Sign(data); }
+        public readonly Pieces Type => byteToType[(byte)Math.Abs(data)];
+        public readonly Sides Side => (Sides)Math.Sign(data);
         public Position Position { get; set; }
-        public sbyte Data { get => data; }
+        public readonly sbyte Data => data;
 
-        public bool CanCastle { get => Type == Pieces.Rook || Type == Pieces.King; }
-        public bool IsNull { get => data == 0; }
-        public Position[] Directions { get => directions[Type]; }
-        public bool RangeLimited { get => rangeLimited[Type]; }
-        public int Score { get => scores[Type]; }
-        public string Name { get => names[HashCode.Combine(Type, Side)]; }
-        public static Piece Null { get; } = new();
+        public readonly bool CanCastle => Type == Pieces.Rook || Type == Pieces.King;
+        public readonly bool IsNull => data == 0;
+        public readonly Position[] Directions => directions[Type];
+        public readonly bool RangeLimited => rangeLimited[Type];
+        public readonly int Score => scores[Type];
+        public readonly string Name => names[HashCode.Combine(Type, Side)];
+        public static Piece Null => new();
 
-        readonly static Dictionary<Pieces, Position[]> directions = new();
+        readonly static Dictionary<Pieces, Position[]> directions = [];
 
         readonly static Dictionary<Pieces, bool> rangeLimited = new()
         {
@@ -46,9 +46,9 @@ namespace MonoChess.Models
             [Pieces.King] = 1000
         };
 
-        readonly static Dictionary<byte, Pieces> byteToType = new();
+        readonly static Dictionary<byte, Pieces> byteToType = [];
 
-        readonly static Dictionary<int, string> names = new();
+        readonly static Dictionary<int, string> names = [];
 
         public Piece(Pieces type, Sides side, Position position)
         {
@@ -75,7 +75,7 @@ namespace MonoChess.Models
                 new(-2, -1), new(-2, 1)
             };
 
-            directions.Add(Pieces.Pawn, new Position[] { new(0, 1), new(1, 1), new(-1, 1) });
+            directions.Add(Pieces.Pawn, [new(0, 1), new(1, 1), new(-1, 1)]);
             directions.Add(Pieces.King, omnidirectional);
             directions.Add(Pieces.Queen, omnidirectional);
             directions.Add(Pieces.Rook, orthogonal);
@@ -117,14 +117,25 @@ namespace MonoChess.Models
             return p1.Type != p2.Type || p1.Side != p2.Side || p1.Position != p2.Position;
         }
 
-        public override string ToString()
+        public readonly override string ToString()
         {
             return $"{Type}, {Side}, {Position}";
         }
 
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
             return HashCode.Combine(Type, Side, Position);
+        }
+
+        public readonly override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            if (obj is Piece piece)
+            {
+                return this == piece;
+            }
+
+            return false;
         }
     }
 }

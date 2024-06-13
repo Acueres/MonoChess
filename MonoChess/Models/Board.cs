@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using MonoChess.Models;
 using MonoChess.Enums;
 
-namespace MonoChess
+namespace MonoChess.Models
 {
     public class Board
     {
@@ -35,8 +33,8 @@ namespace MonoChess
 
         public Piece this[Position pos]
         {
-            get => new(data[pos.X + (pos.Y * BOARD_SIZE)], pos);
-            set => data[pos.X + (pos.Y * BOARD_SIZE)] = value.Data;
+            get => new(data[pos.X + pos.Y * BOARD_SIZE], pos);
+            set => data[pos.X + pos.Y * BOARD_SIZE] = value.Data;
         }
 
         public void MakeMove(Move move, out Piece removed)
@@ -283,9 +281,9 @@ namespace MonoChess
                     if (piece.RangeLimited)
                     {
                         //allow pawn to move two tiles from initial rank
-                        if (piece.Type == Pieces.Pawn && (this[targetPos - direction].IsNull) &&
-                            ((piece.Side == Sides.White && piece.Position.Y == 6) ||
-                            (piece.Side == Sides.Black && piece.Position.Y == 1)))
+                        if (piece.Type == Pieces.Pawn && this[targetPos - direction].IsNull &&
+                            (piece.Side == Sides.White && piece.Position.Y == 6 ||
+                            piece.Side == Sides.Black && piece.Position.Y == 1))
                         {
                             targetPos -= direction;
                             yield return new Move(piece, targetPos);
@@ -436,7 +434,7 @@ namespace MonoChess
 
         public bool[] GetCastlingData()
         {
-            return new bool[] { whiteCastling, blackCastling };
+            return [whiteCastling, blackCastling];
         }
 
         public void SetCastling(Sides side, bool value)
@@ -477,7 +475,7 @@ namespace MonoChess
                 Pieces.Rook
             };
 
-            Span<Sides> sides = stackalloc Sides[] { Sides.Black, Sides.White };
+            Span<Sides> sides = [Sides.Black, Sides.White];
             foreach (var side in sides)
             {
                 int y = side == Sides.Black ? 0 : 7;

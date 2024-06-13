@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
-
 namespace MonoChess
 {
     static class Util
@@ -30,16 +29,6 @@ namespace MonoChess
         public static bool KeyPressed(Keys key, KeyboardState currentState, KeyboardState previousState)
         {
             return currentState.IsKeyDown(key) && !previousState.IsKeyDown(key);
-        }
-
-        public static int GetNextIndex(int index, int end)
-        {
-            if (index == end - 1)
-            {
-                return 0;
-            }
-
-            return ++index;
         }
 
         public static Sides ReverseSide(Sides side)

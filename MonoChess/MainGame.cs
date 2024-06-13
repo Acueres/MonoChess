@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
 using MonoChess.Enums;
+using MonoChess.Models;
 
 namespace MonoChess
 {
@@ -19,7 +20,7 @@ namespace MonoChess
         SpriteBatch spriteBatch;
 
         Menu menu;
-        Chess chess;
+        ChessEngine chess;
         readonly GameParameters parameters = new();
 
         KeyboardState prevKs = Keyboard.GetState();
@@ -56,7 +57,7 @@ namespace MonoChess
 
             var textures = LoadTextures();
 
-            chess = new Chess(this, GraphicsDevice, spriteBatch, parameters, textures, fonts);
+            chess = new ChessEngine(this, GraphicsDevice, spriteBatch, parameters, textures, fonts);
             menu = new Menu(this, GraphicsDevice, chess, parameters, spriteBatch, textures, fonts);
 
             base.Initialize();
@@ -100,7 +101,7 @@ namespace MonoChess
         private Dictionary<string, Texture2D> LoadTextures()
         {
             var paths = Directory.GetFiles("Assets/Pieces/", ".").ToArray();
-            Dictionary<string, Texture2D> textures = new();
+            Dictionary<string, Texture2D> textures = [];
 
             foreach (var path in paths)
             {
