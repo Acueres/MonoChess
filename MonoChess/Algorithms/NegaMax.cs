@@ -11,15 +11,15 @@ namespace MonoChess.Algorithms
     {
         Board board;
 
-        public Move CalculateMove(int depth, Sides side, ChessState state, Board board)
+        public Move CalculateMove(int depth, Side side, ChessState state, Board board)
         {
             if (state == ChessState.Opening)
             {
                 return new Move(board[new(4, 6)], new(4, 4));
             }
 
-            bool check = (state == ChessState.WhiteCheck && side == Sides.White)
-                || (state == ChessState.BlackCheck && side == Sides.Black);
+            bool check = (state == ChessState.WhiteCheck && side == Side.White)
+                || (state == ChessState.BlackCheck && side == Side.Black);
 
             Move bestMove = Move.Null;
             this.board = new(board);
@@ -47,7 +47,7 @@ namespace MonoChess.Algorithms
             return bestMove;
         }
 
-        int CalculateScore(int depth, Sides side)
+        int CalculateScore(int depth, Side side)
         {
             side = Util.ReverseSide(side);
 

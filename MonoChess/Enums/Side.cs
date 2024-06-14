@@ -1,6 +1,6 @@
 ﻿namespace MonoChess.Enums
 {
-    public enum Sides : sbyte
+    public enum Side : sbyte
     {
         Null = 0,
         White = 1,

@@ -1,11 +1,6 @@
-﻿using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using FontStashSharp;
 
 using MonoChess.Enums;
 using MonoChess.Models;
@@ -43,22 +38,20 @@ namespace MonoChess
 
         protected override void Initialize()
         {
-            graphics.PreferredBackBufferWidth = Board.SIZE;
-            graphics.PreferredBackBufferHeight = Board.SIZE;
+            const int SIZE = 504;
+
+            graphics.PreferredBackBufferWidth = SIZE;
+            graphics.PreferredBackBufferHeight = SIZE;
+
             graphics.ApplyChanges();
-
-            byte[] ttfData = File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf");
-            FontSystem fs = new();
-            fs.AddFont(ttfData);
-
-            var fonts = Enumerable.Range(12, 21).ToDictionary(x => x, x => fs.GetFont(x));
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            var textures = LoadTextures();
+            AssetServer assetServer = new(Content, graphics.GraphicsDevice);
+            assetServer.Load();
 
-            chess = new ChessEngine(this, GraphicsDevice, spriteBatch, parameters, textures, fonts);
-            menu = new Menu(this, GraphicsDevice, chess, parameters, spriteBatch, textures, fonts);
+            chess = new ChessEngine(this, spriteBatch, parameters, assetServer);
+            menu = new Menu(this, GraphicsDevice, chess, parameters, spriteBatch, assetServer);
 
             base.Initialize();
         }
@@ -96,21 +89,6 @@ namespace MonoChess
             spriteBatch.End();
 
             base.Draw(gameTime);
-        }
-
-        private Dictionary<string, Texture2D> LoadTextures()
-        {
-            var paths = Directory.GetFiles("Assets/Pieces/", ".").ToArray();
-            Dictionary<string, Texture2D> textures = [];
-
-            foreach (var path in paths)
-            {
-                var textureName = path.Split("/", 2)[^1].Split("/")[1].Split(".")[0];
-
-                textures.Add(textureName, Content.Load<Texture2D>("Pieces/" + textureName));
-            }
-
-            return textures;
         }
 
         private void CheckInput()

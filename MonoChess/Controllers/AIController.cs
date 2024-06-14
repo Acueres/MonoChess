@@ -23,7 +23,7 @@ namespace MonoChess.Controllers
             };
         }
 
-        public async Task<Move> NextMoveAsync(GameParameters parameters, Sides side, ChessState state)
+        public async Task<Move> NextMoveAsync(GameParameters parameters, Side side, ChessState state)
         {
             Move move = Move.Null;
 
@@ -32,7 +32,7 @@ namespace MonoChess.Controllers
             return move;
         }
 
-        public Move NextMove(GameParameters parameters, Sides side, ChessState state)
+        public Move NextMove(GameParameters parameters, Side side, ChessState state)
         {
             return algorithms[parameters.AlgorithmType].CalculateMove(parameters.Depth, side, state, board);
         }

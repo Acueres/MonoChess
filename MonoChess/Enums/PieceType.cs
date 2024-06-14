@@ -1,6 +1,6 @@
 ﻿namespace MonoChess.Enums
 {
-    public enum Pieces : byte
+    public enum PieceType : byte
     {
         Null,
         Pawn,

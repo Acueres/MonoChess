@@ -14,12 +14,14 @@ namespace MonoChess
 {
     public class Menu
     {
-        SpriteBatch spriteBatch;
+        readonly SpriteBatch spriteBatch;
+
         List<IGUIElement> main;
         List<IGUIElement> setup;
         List<IGUIElement> pause;
         List<IGUIElement> endgame;
-        Dictionary<GameState, List<IGUIElement>> grids;
+
+        readonly Dictionary<GameState, List<IGUIElement>> grids;
 
         MouseState previousMs = Mouse.GetState();
 
@@ -35,7 +37,7 @@ namespace MonoChess
 
         const int nAlgorithms = 3;
 
-        public Menu(MainGame game, GraphicsDevice graphics, ChessEngine chess, GameParameters parameters, SpriteBatch spriteBatch, Dictionary<string, Texture2D> textures, Dictionary<int, DynamicSpriteFont> fonts)
+        public Menu(MainGame game, GraphicsDevice graphics, ChessEngine chess, GameParameters parameters, SpriteBatch spriteBatch, AssetServer assetServer)
         {
             this.spriteBatch = spriteBatch;
 
@@ -43,10 +45,10 @@ namespace MonoChess
             Button.BaseTexture = buttonBase;
             Button.Highlight = Util.GetColoredTexture(graphics, 50, 50, Color.White);
 
-            CreateMainMenu(game, chess, parameters, fonts);
-            CreateSetupMenu(game, parameters, fonts, textures, buttonBase);
-            CreateInGameMenu(game, chess, fonts);
-            CreateEndgameMenu(game, chess, fonts);
+            InitMainMenu(game, chess, parameters, assetServer);
+            InitSetupMenu(game, parameters, assetServer, buttonBase);
+            InitInGameMenu(game, chess, assetServer);
+            InitEndgameMenu(game, chess, assetServer);
 
             grids = new Dictionary<GameState, List<IGUIElement>>()
             {
@@ -81,7 +83,7 @@ namespace MonoChess
             previousMs = ms;
         }
 
-        private void CreateMainMenu(MainGame game, ChessEngine chess, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts)
+        private void InitMainMenu(MainGame game, ChessEngine chess, GameParameters parameters, AssetServer assetServer)
         {
             main = [];
 
@@ -90,7 +92,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 150, 120, 30),
                 Text = "Chess",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[32]
+                Font = assetServer.GetFont(32)
             };
             main.Add(chessLabel);
 
@@ -99,7 +101,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 100, 120, 30),
                 Text = "Resume",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => 
                 {
                     if (parameters.Load())
@@ -117,7 +119,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
                 Text = "Single Player",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => { parameters.SinglePlayer = true; game.State = GameState.SetupMenu; }
             };
             main.Add(singlePlayer);
@@ -127,7 +129,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 20, 120, 30),
                 Text = "Two Players",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => { parameters.SinglePlayer = false; game.State = GameState.Running; game.State = GameState.Running; }
             };
             main.Add(twoPlayers);
@@ -137,14 +139,13 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 + 60, 120, 30),
                 Text = "Quit Game",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => { game.Exit(); }
             };
             main.Add(quit);
         }
 
-        private void CreateSetupMenu(MainGame game, GameParameters parameters, Dictionary<int, DynamicSpriteFont> fonts,
-            Dictionary<string, Texture2D> textures, Texture2D buttonBase)
+        private void InitSetupMenu(MainGame game, GameParameters parameters, AssetServer assetServer, Texture2D buttonBase)
         {
             setup = [];
 
@@ -153,7 +154,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 150, 120, 30),
                 Text = "Setup",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[32]
+                Font = assetServer.GetFont(32)
             };
             setup.Add(setupLabel);
 
@@ -162,7 +163,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 100, 120, 30),
                 Text = "Play as",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[22]
+                Font = assetServer.GetFont(22)
             };
             setup.Add(chooseSide);
 
@@ -176,13 +177,13 @@ namespace MonoChess
 
             Button side = new()
             {
-                Texture = textures["w_king"],
+                Texture = assetServer.GetTexture(PieceType.King, Side.White),
                 Rect = sideRect
             };
             side.Action = () =>
             {
-                parameters.PlayerSide = parameters.PlayerSide == Sides.White ? parameters.PlayerSide = Sides.Black : Sides.White;
-                side.Texture = parameters.PlayerSide == Sides.White ? textures["w_king"] : textures["b_king"];
+                parameters.PlayerSide = parameters.PlayerSide == Side.White ? parameters.PlayerSide = Side.Black : Side.White;
+                side.Texture = parameters.PlayerSide == Side.White ? assetServer.GetTexture(PieceType.King, Side.White) : assetServer.GetTexture(PieceType.King, Side.Black);
             };
             setup.Add(side);
 
@@ -191,7 +192,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 10, 120, 30),
                 Text = "Algorithm",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[22]
+                Font = assetServer.GetFont(22)
             };
             setup.Add(chooseAlgorithm);
 
@@ -200,7 +201,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 + 20, 120, 30),
                 Text = "AlphaBeta",
                 TextColor = Color.Black,
-                Font = fonts[22]
+                Font = assetServer.GetFont(22)
             };
             algorithm.Action = () =>
             {
@@ -214,7 +215,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 + 70, 120, 30),
                 Text = "Difficulty",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[22]
+                Font = assetServer.GetFont(22)
             };
             setup.Add(chooseDifficulty);
 
@@ -223,7 +224,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 + 100, 120, 30),
                 Text = difficultyLevels[parameters.Depth],
                 TextColor = Color.Black,
-                Font = fonts[22]
+                Font = assetServer.GetFont(22)
             };
             difficulty.Action = () =>
             {
@@ -237,7 +238,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 65, Board.SIZE / 2 + 150, 60, 30),
                 Text = "Play",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => 
                 { 
                     game.State = GameState.Running; 
@@ -251,14 +252,13 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 + 5, Board.SIZE / 2 + 150, 60, 30),
                 Text = "Back",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => { game.State = GameState.MainMenu; }
             };
             setup.Add(back);
         }
 
-        private void CreateInGameMenu(MainGame game, ChessEngine chess,
-            Dictionary<int, DynamicSpriteFont> fonts)
+        private void InitInGameMenu(MainGame game, ChessEngine chess, AssetServer assetServer)
         {
             pause = [];
 
@@ -267,7 +267,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 150, 120, 30),
                 Text = "Menu",
                 TextColor = Color.AntiqueWhite,
-                Font = fonts[32]
+                Font = assetServer.GetFont(32)
             };
             pause.Add(menuLabel);
 
@@ -276,7 +276,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 100, 120, 30),
                 Text = "Abandon",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () =>
                 {
                     chess.EraseState();
@@ -291,7 +291,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
                 Text = "Pause",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => 
                 {
                     chess.SaveState();
@@ -306,13 +306,13 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2, 120, 30),
                 Text = "Return",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () => { game.State = GameState.Running; }
             };
             pause.Add(@return);
         }
 
-        private void CreateEndgameMenu(MainGame game, ChessEngine chess, Dictionary<int, DynamicSpriteFont> fonts)
+        private void InitEndgameMenu(MainGame game, ChessEngine chess, AssetServer assetServer)
         {
             endgame = [];
 
@@ -321,7 +321,7 @@ namespace MonoChess
                 Rect = new(Board.SIZE / 2 - 60, Board.SIZE / 2 - 60, 120, 30),
                 Text = "Main Menu",
                 TextColor = Color.Black,
-                Font = fonts[22],
+                Font = assetServer.GetFont(22),
                 Action = () =>
                 {
                     chess.EraseState();

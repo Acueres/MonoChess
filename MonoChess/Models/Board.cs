@@ -45,7 +45,7 @@ namespace MonoChess.Models
             }
             else if (move.PromotionCondition())
             {
-                removed = MakeMove(new Piece(Pieces.Queen, move.Piece.Side, move.Piece.Position), move.TargetPosition);
+                removed = MakeMove(new Piece(PieceType.Queen, move.Piece.Side, move.Piece.Position), move.TargetPosition);
             }
             else
             {
@@ -70,14 +70,14 @@ namespace MonoChess.Models
             return removed;
         }
 
-        private Piece CastlingMove(Position oldRookPos, Sides side)
+        private Piece CastlingMove(Position oldRookPos, Side side)
         {
             Piece rook = this[oldRookPos];
 
             Position rookPos;
             Position kingPos;
 
-            Position oldKingPos = side == Sides.White ? new(4, 7) : new(4, 0);
+            Position oldKingPos = side == Side.White ? new(4, 7) : new(4, 0);
 
             int rank = oldRookPos.X;
             int file = oldRookPos.Y;
@@ -96,8 +96,8 @@ namespace MonoChess.Models
             this[oldKingPos] = Piece.Null;
             this[oldRookPos] = Piece.Null;
 
-            this[kingPos] = new Piece(Pieces.King, side, kingPos);
-            this[rookPos] = new Piece(Pieces.Rook, side, rookPos);
+            this[kingPos] = new Piece(PieceType.King, side, kingPos);
+            this[rookPos] = new Piece(PieceType.Rook, side, rookPos);
 
             SetCastling(side, false);
 
@@ -120,12 +120,12 @@ namespace MonoChess.Models
             this[move.Piece.Position] = move.Piece;
         }
 
-        private void ReverseCastlingMove(Position rookPos, Sides side)
+        private void ReverseCastlingMove(Position rookPos, Side side)
         {
             Position oldRookPos;
             Position oldKingPos;
 
-            Position kingPos = side == Sides.White ? new(4, 7) : new(4, 0);
+            Position kingPos = side == Side.White ? new(4, 7) : new(4, 0);
 
             int rank = rookPos.X;
             int file = rookPos.Y;
@@ -144,8 +144,8 @@ namespace MonoChess.Models
             this[oldKingPos] = Piece.Null;
             this[oldRookPos] = Piece.Null;
 
-            this[kingPos] = new Piece(Pieces.King, side, kingPos);
-            this[rookPos] = new Piece(Pieces.Rook, side, rookPos);
+            this[kingPos] = new Piece(PieceType.King, side, kingPos);
+            this[rookPos] = new Piece(PieceType.Rook, side, rookPos);
 
             SetCastling(side, true);
         }
@@ -154,8 +154,8 @@ namespace MonoChess.Models
         {
             //piece is guaranteed to be either king or rook
             //piece is guaranteed to change its position
-            Sides side = piece.Side;
-            if (piece.Type == Pieces.King)
+            Side side = piece.Side;
+            if (piece.Type == PieceType.King)
             {
                 return true;
             }
@@ -165,7 +165,7 @@ namespace MonoChess.Models
             {
                 if (data[i] == 0) continue;
 
-                if (Piece.GetSide(data[i]) == side && Piece.GetType(data[i]) == Pieces.Rook)
+                if (Piece.GetSide(data[i]) == side && Piece.GetType(data[i]) == PieceType.Rook)
                 {
                     rooks[rooksIndex] = new Piece(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
                     rooksIndex++;
@@ -197,7 +197,7 @@ namespace MonoChess.Models
             return false;
         }
 
-        public int GetScore(Sides side)
+        public int GetScore(Side side)
         {
             int res = 0;
             for (int i = 0; i < data.Length; i++)
@@ -211,7 +211,7 @@ namespace MonoChess.Models
             return res;
         }
 
-        public IEnumerable<Piece> GetPieces(Sides side)
+        public IEnumerable<Piece> GetPieces(Side side)
         {
             for (int i = 0; i < data.Length; i++)
             {
@@ -236,7 +236,7 @@ namespace MonoChess.Models
             }
         }
 
-        public IEnumerable<Move> GenerateMoves(Sides side)
+        public IEnumerable<Move> GenerateMoves(Side side)
         {
             foreach (var piece in GetPieces(side))
             {
@@ -259,7 +259,7 @@ namespace MonoChess.Models
                 {
                     if (!this[targetPos].IsNull)
                     {
-                        if (piece.Type == Pieces.Pawn && direction.Orthogonal)
+                        if (piece.Type == PieceType.Pawn && direction.Orthogonal)
                         {
                             break; //prevent pawn straight attack
                         }
@@ -271,7 +271,7 @@ namespace MonoChess.Models
                         break; //path blocked
                     }
 
-                    if (piece.Type == Pieces.Pawn && !direction.Orthogonal)
+                    if (piece.Type == PieceType.Pawn && !direction.Orthogonal)
                     {
                         break; //prevent pawn lateral movement
                     }
@@ -281,9 +281,9 @@ namespace MonoChess.Models
                     if (piece.RangeLimited)
                     {
                         //allow pawn to move two tiles from initial rank
-                        if (piece.Type == Pieces.Pawn && this[targetPos - direction].IsNull &&
-                            (piece.Side == Sides.White && piece.Position.Y == 6 ||
-                            piece.Side == Sides.Black && piece.Position.Y == 1))
+                        if (piece.Type == PieceType.Pawn && this[targetPos - direction].IsNull &&
+                            (piece.Side == Side.White && piece.Position.Y == 6 ||
+                            piece.Side == Side.Black && piece.Position.Y == 1))
                         {
                             targetPos -= direction;
                             yield return new Move(piece, targetPos);
@@ -295,7 +295,7 @@ namespace MonoChess.Models
                 }
             }
 
-            if (piece.Type == Pieces.King && GetCastling(piece.Side))
+            if (piece.Type == PieceType.King && GetCastling(piece.Side))
             {
                 foreach (var castlingMove in GenerateCastlingMoves(piece))
                 {
@@ -306,12 +306,12 @@ namespace MonoChess.Models
 
         private IEnumerable<Move> GenerateCastlingMoves(Piece piece)
         {
-            Position kingOrigin = piece.Side == Sides.White ? new(4, 7) : new(4, 0);
-            Position rook1Origin = piece.Side == Sides.White ? new(0, 7) : new(0, 0);
-            Position rook2Origin = piece.Side == Sides.White ? new(7, 7) : new(7, 0);
+            Position kingOrigin = piece.Side == Side.White ? new(4, 7) : new(4, 0);
+            Position rook1Origin = piece.Side == Side.White ? new(0, 7) : new(0, 0);
+            Position rook2Origin = piece.Side == Side.White ? new(7, 7) : new(7, 0);
 
             if (piece.Position == kingOrigin
-                && this[rook1Origin].Type == Pieces.Rook
+                && this[rook1Origin].Type == PieceType.Rook
                 && this[rook1Origin].Side == piece.Side)
             {
                 Position direction = new(-1, 0);
@@ -333,7 +333,7 @@ namespace MonoChess.Models
             }
 
             if (piece.Position == kingOrigin
-                && this[rook2Origin].Type == Pieces.Rook
+                && this[rook2Origin].Type == PieceType.Rook
                 && this[rook2Origin].Side == piece.Side)
             {
                 Position direction = new(1, 0);
@@ -355,7 +355,7 @@ namespace MonoChess.Models
             }
         }
 
-        public bool DetectCheck(Sides side)
+        public bool DetectCheck(Side side)
         {
             var oppositeSide = Util.ReverseSide(side);
             var king = GetKing(side);
@@ -372,7 +372,7 @@ namespace MonoChess.Models
             return false;
         }
 
-        public bool DetectCheck(Sides side, Move move)
+        public bool DetectCheck(Side side, Move move)
         {
             var oppositeSide = Util.ReverseSide(side);
             MakeMove(move, out var removed);
@@ -398,7 +398,7 @@ namespace MonoChess.Models
             return false;
         }
 
-        public bool DetectCheckmate(Sides side)
+        public bool DetectCheckmate(Side side)
         {
             //returns false if there is at least one escape move
             foreach (var move in GenerateMoves(side))
@@ -412,13 +412,13 @@ namespace MonoChess.Models
             return true;
         }
 
-        public Piece GetKing(Sides side)
+        public Piece GetKing(Side side)
         {
             for (int i = 0; i < data.Length; i++)
             {
                 if (data[i] == 0) continue;
 
-                if (Piece.GetType(data[i]) == Pieces.King && Piece.GetSide(data[i]) == side)
+                if (Piece.GetType(data[i]) == PieceType.King && Piece.GetSide(data[i]) == side)
                 {
                     return new Piece(data[i], new(i % BOARD_SIZE, i / BOARD_SIZE));
                 }
@@ -437,9 +437,9 @@ namespace MonoChess.Models
             return [whiteCastling, blackCastling];
         }
 
-        public void SetCastling(Sides side, bool value)
+        public void SetCastling(Side side, bool value)
         {
-            if (side == Sides.White)
+            if (side == Side.White)
             {
                 whiteCastling = value;
             }
@@ -449,9 +449,9 @@ namespace MonoChess.Models
             }
         }
 
-        public bool GetCastling(Sides side)
+        public bool GetCastling(Side side)
         {
-            if (side == Sides.White)
+            if (side == Side.White)
                 return whiteCastling;
 
             return blackCastling;
@@ -463,22 +463,22 @@ namespace MonoChess.Models
 
             SetCastlingData(true, true);
 
-            var arrangementOrder = new Pieces[]
+            var arrangementOrder = new PieceType[]
             {
-                Pieces.Rook,
-                Pieces.Knight,
-                Pieces.Bishop,
-                Pieces.Queen,
-                Pieces.King,
-                Pieces.Bishop,
-                Pieces.Knight,
-                Pieces.Rook
+                PieceType.Rook,
+                PieceType.Knight,
+                PieceType.Bishop,
+                PieceType.Queen,
+                PieceType.King,
+                PieceType.Bishop,
+                PieceType.Knight,
+                PieceType.Rook
             };
 
-            Span<Sides> sides = [Sides.Black, Sides.White];
+            Span<Side> sides = [Side.Black, Side.White];
             foreach (var side in sides)
             {
-                int y = side == Sides.Black ? 0 : 7;
+                int y = side == Side.Black ? 0 : 7;
 
                 for (int x = 0; x < 8; x++)
                 {
@@ -486,7 +486,7 @@ namespace MonoChess.Models
                     this[pos] = new Piece(arrangementOrder[x], side, pos);
                 }
 
-                if (side == Sides.Black)
+                if (side == Side.Black)
                 {
                     y++;
                 }
@@ -498,7 +498,7 @@ namespace MonoChess.Models
                 for (int x = 0; x < 8; x++)
                 {
                     var pos = new Position(x, y);
-                    this[pos] = new Piece(Pieces.Pawn, side, pos);
+                    this[pos] = new Piece(PieceType.Pawn, side, pos);
                 }
             }
         }
@@ -513,7 +513,7 @@ namespace MonoChess.Models
                 {
                     if (numData[i] != 0)
                     {
-                        piecesData.Add(new((Pieces)Math.Abs(numData[i]), numData[i] > 0 ? Sides.White : Sides.Black, new(x, y)));
+                        piecesData.Add(new((PieceType)Math.Abs(numData[i]), numData[i] > 0 ? Side.White : Side.Black, new(x, y)));
                     }
                 }
             }

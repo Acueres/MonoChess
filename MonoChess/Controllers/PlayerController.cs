@@ -27,7 +27,7 @@ namespace MonoChess.Controllers
             this.board = board;
         }
 
-        public async Task<Move> NextMoveAsync(GameParameters parameters, Sides side, ChessState state)
+        public async Task<Move> NextMoveAsync(GameParameters parameters, Side side, ChessState state)
         {
             Move move = Move.Null;
             stopTask = false;
@@ -57,7 +57,7 @@ namespace MonoChess.Controllers
             return move;
         }
 
-        public Move NextMove(Sides side)
+        public Move NextMove(Side side)
         {
             MouseState ms = Mouse.GetState();
 

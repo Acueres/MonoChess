@@ -31,9 +31,9 @@ namespace MonoChess
             return currentState.IsKeyDown(key) && !previousState.IsKeyDown(key);
         }
 
-        public static Sides ReverseSide(Sides side)
+        public static Side ReverseSide(Side side)
         {
-            return side == Sides.White ? Sides.Black : Sides.White;
+            return side == Side.White ? Side.Black : Side.White;
         }
     }
 }

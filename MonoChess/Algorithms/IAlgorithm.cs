@@ -5,6 +5,6 @@ namespace MonoChess.Algorithms
 {
     interface IAlgorithm
     {
-        public Move CalculateMove(int depth, Sides side, ChessState state, Board board);
+        public Move CalculateMove(int depth, Side side, ChessState state, Board board);
     }
 }

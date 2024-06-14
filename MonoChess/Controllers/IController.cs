@@ -7,6 +7,6 @@ namespace MonoChess.Controllers
 {
     interface IController
     {
-        public Task<Move> NextMoveAsync(GameParameters parameters, Sides side, ChessState state);
+        public Task<Move> NextMoveAsync(GameParameters parameters, Side side, ChessState state);
     }
 }
