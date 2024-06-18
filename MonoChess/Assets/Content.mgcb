@@ -13,6 +13,9 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Fonts/LiberationSans-Regular.ttf
+/copy:Fonts/LiberationSans-Regular.ttf
+
 #begin Pieces/b_bishop.png
 /importer:TextureImporter
 /processor:TextureProcessor

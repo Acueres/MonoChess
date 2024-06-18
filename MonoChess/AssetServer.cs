@@ -69,7 +69,7 @@ namespace MonoChess
 
         private void LoadFonts()
         {
-            byte[] ttfData = File.ReadAllBytes(@"C:\\Windows\\Fonts\arial.ttf");
+            byte[] ttfData = File.ReadAllBytes(@"Assets\Fonts\LiberationSans-Regular.ttf");
             FontSystem fs = new();
             fs.AddFont(ttfData);
 
