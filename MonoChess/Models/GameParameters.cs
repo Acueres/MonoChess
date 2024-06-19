@@ -9,6 +9,7 @@ namespace MonoChess.Models
 {
     public class GameParameters
     {
+        public GameState GameState { get; set; }
         public Side PlayerSide { get; set; } = Side.White;
         public Side CurrentSide { get; set; } = Side.White;
         public bool SinglePlayer { get; set; }

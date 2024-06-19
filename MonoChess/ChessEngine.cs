@@ -12,8 +12,6 @@ namespace MonoChess
 {
     public class ChessEngine
     {
-        readonly MainGame game;
-
         readonly AssetServer assetServer;
         readonly SpriteBatch spriteBatch;
 
@@ -32,9 +30,8 @@ namespace MonoChess
         bool PlayerTurn { get => currentSide == parameters.PlayerSide || !parameters.SinglePlayer; }
         double calculationTime;
 
-        public ChessEngine(MainGame game, SpriteBatch spriteBatch, GameParameters parameters, AssetServer assetServer)
+        public ChessEngine(SpriteBatch spriteBatch, GameParameters parameters, AssetServer assetServer)
         {
-            this.game = game;
             this.spriteBatch = spriteBatch;
             this.parameters = parameters;
             this.assetServer = assetServer;
@@ -58,11 +55,11 @@ namespace MonoChess
 
         public async Task Update()
         {
-            if (waiting || game.State == GameState.End) return;
+            if (waiting || parameters.GameState == GameState.End) return;
 
             if (board.DetectCheckmate(currentSide))
             {
-                game.State = GameState.End;
+                parameters.GameState = GameState.End;
                 return;
             }
 
@@ -90,7 +87,7 @@ namespace MonoChess
             waiting = false;
         }
 
-        public void Draw(GameState gameState, GameTime gameTime)
+        public void Draw(GameTime gameTime)
         {
             Rectangle rect;
             var size = Board.SIZE / 8;
@@ -171,12 +168,12 @@ namespace MonoChess
                     new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30), Color.Azure);
             }
 
-            if (gameState != GameState.Running)
+            if (parameters.GameState != GameState.Running)
             {
                 spriteBatch.Draw(assetServer.GetTexture(TileType.Shading), new Rectangle(0, 0, Board.SIZE, Board.SIZE), Color.White);
             }
 
-            if (gameState == GameState.End)
+            if (parameters.GameState == GameState.End)
             {
                 spriteBatch.DrawString(assetServer.GetFont(24), Util.ReverseSide(currentSide).ToString() + " Victory",
                     new Vector2(Board.SIZE / 2 - 60, Board.SIZE / 2 - 120), Color.AntiqueWhite);

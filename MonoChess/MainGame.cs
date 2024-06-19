@@ -9,17 +9,14 @@ namespace MonoChess
 {
     public class MainGame : Game
     {
-        public GameState State { get; set; }
-
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         Menu menu;
         ChessEngine chess;
-        readonly GameParameters parameters = new();
+        readonly GameParameters parameters;
 
-        KeyboardState prevKs = Keyboard.GetState();
-
+        KeyboardState previousKs;
 
         public MainGame()
         {
@@ -34,6 +31,9 @@ namespace MonoChess
             IsFixedTimeStep = true;
 
             Content.RootDirectory = "Assets";
+
+            parameters = new GameParameters();
+            previousKs = new KeyboardState();
         }
 
         protected override void Initialize()
@@ -50,8 +50,8 @@ namespace MonoChess
             AssetServer assetServer = new(Content, graphics.GraphicsDevice);
             assetServer.Load();
 
-            chess = new ChessEngine(this, spriteBatch, parameters, assetServer);
-            menu = new Menu(this, GraphicsDevice, chess, parameters, spriteBatch, assetServer);
+            chess = new ChessEngine(spriteBatch, parameters, assetServer);
+            menu = new Menu(GraphicsDevice, chess, parameters, spriteBatch, assetServer, () => Exit());
 
             base.Initialize();
         }
@@ -66,9 +66,9 @@ namespace MonoChess
             if (IsActive)
             {
                 CheckInput();
-                menu.Update(State);
+                menu.Update();
 
-                if (State == GameState.Running)
+                if (parameters.GameState == GameState.Running)
                 {
                     await chess.Update();
                 }
@@ -83,8 +83,8 @@ namespace MonoChess
 
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
-            chess.Draw(State, gameTime);
-            menu.Draw(State);
+            chess.Draw(gameTime);
+            menu.Draw();
 
             spriteBatch.End();
 
@@ -95,24 +95,24 @@ namespace MonoChess
         {
             var ks = Keyboard.GetState();
 
-            if (Util.KeyPressed(Keys.Escape, ks, prevKs))
+            if (Util.KeyPressed(Keys.Escape, ks, previousKs))
             {
-                if (State == GameState.Running)
+                if (parameters.GameState == GameState.Running)
                 {
-                    State = GameState.Pause;
+                    parameters.GameState = GameState.Pause;
                 }
-                else if (State == GameState.Pause)
+                else if (parameters.GameState == GameState.Pause)
                 {
-                    State = GameState.Running;
+                    parameters.GameState = GameState.Running;
                 }
             }
 
-            else if (Util.KeyPressed(Keys.G, ks, prevKs))
+            else if (Util.KeyPressed(Keys.G, ks, previousKs))
             {
                 parameters.ShowGrid ^= true;
             }
 
-            prevKs = ks;
+            previousKs = ks;
         }
     }
 }
