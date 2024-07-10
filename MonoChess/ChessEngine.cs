@@ -15,8 +15,6 @@ namespace MonoChess
         readonly AssetServer assetServer;
         readonly SpriteBatch spriteBatch;
 
-        readonly string[] filesChars = ["a", "b", "c", "d", "e", "f", "g", "h"];
-
         readonly GameParameters parameters;
         readonly AIController aiController;
         readonly PlayerController playerController;
@@ -26,8 +24,8 @@ namespace MonoChess
         Side currentSide = Side.White;
         ChessState state;
         Move move = Move.Null;
-        bool waiting;
-        bool PlayerTurn { get => currentSide == parameters.PlayerSide || !parameters.SinglePlayer; }
+
+        bool PlayerTurn  => currentSide == parameters.PlayerSide || !parameters.SinglePlayer;
         double calculationTime;
 
         public ChessEngine(SpriteBatch spriteBatch, GameParameters parameters, AssetServer assetServer)
@@ -49,13 +47,12 @@ namespace MonoChess
             playerController.SelectedPiece = Piece.Null;
             move = Move.Null;
             board.SetPieces();
-            waiting = false;
             state = ChessState.Opening;
         }
 
         public async Task Update()
         {
-            if (waiting || parameters.GameState == GameState.End) return;
+            if (parameters.GameState == GameState.End) return;
 
             if (board.DetectCheckmate(currentSide))
             {
@@ -72,7 +69,6 @@ namespace MonoChess
                 state = ChessState.Default;
             }
 
-            waiting = true;
             IController controller = PlayerTurn ? playerController : aiController;
             calculationTime = 0;
             nextMoveTask = controller.NextMoveAsync(parameters, currentSide, state);
@@ -83,14 +79,14 @@ namespace MonoChess
             board.MakeMove(move, out _);
 
             currentSide = Util.ReverseSide(currentSide);
-
-            waiting = false;
         }
 
         public void Draw(GameTime gameTime)
         {
+            const string gridLetters = "abcdefgh";
+
             Rectangle rect;
-            var size = Board.SIZE / 8;
+            int size = Board.SIZE / 8;
             calculationTime += gameTime.ElapsedGameTime.TotalSeconds;
 
             //Draw board
@@ -104,7 +100,7 @@ namespace MonoChess
 
                     if (parameters.ShowGrid)
                     {
-                        spriteBatch.DrawString(assetServer.GetFont(22), filesChars[x] + (8 - y), new Vector2(x * size, y * size), Color.Red);
+                        spriteBatch.DrawString(assetServer.GetFont(18), gridLetters[x].ToString() + (8 - y), new Vector2(x * size, y * size), Color.Red);
                     }
                 }
             }
@@ -159,7 +155,7 @@ namespace MonoChess
                 spriteBatch.Draw(assetServer.GetTexture(piece.Data), rect, Color.White);
             }
 
-            if (waiting && !PlayerTurn && calculationTime > 0.5)
+            if (!PlayerTurn && calculationTime > 0.5)
             {
                 spriteBatch.Draw(assetServer.GetTexture(TileType.Shading),
                     new Rectangle(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30, 120, 30), Color.White);

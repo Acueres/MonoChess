@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Threading.Tasks;
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,8 +16,9 @@ namespace MonoChess
 
         Menu menu;
         ChessEngine chess;
-        readonly GameParameters parameters;
 
+        readonly GameParameters parameters;
+        Task engineTask;
         KeyboardState previousKs;
 
         public MainGame()
@@ -34,6 +37,8 @@ namespace MonoChess
 
             parameters = new GameParameters();
             previousKs = new KeyboardState();
+
+            engineTask = Task.CompletedTask;
         }
 
         protected override void Initialize()
@@ -68,9 +73,10 @@ namespace MonoChess
                 CheckInput();
                 menu.Update();
 
-                if (parameters.GameState == GameState.Running)
+                if (parameters.GameState == GameState.Running && engineTask.IsCompleted)
                 {
-                    await chess.Update();
+                    engineTask = chess.Update();
+                    await engineTask;
                 }
             }
 
