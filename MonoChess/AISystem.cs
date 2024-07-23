@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using MonoChess.Algorithms;
+using MonoChess.Enums;
+using MonoChess.Models;
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using MonoChess.Models;
-using MonoChess.Algorithms;
-using MonoChess.Enums;
-
-namespace MonoChess.Controllers
+namespace MonoChess
 {
-    class AIController : IController
+    class AISystem
     {
         readonly Board board;
         readonly Dictionary<AlgorithmType, IAlgorithm> algorithms;
 
-        public AIController(Board board)
+        public AISystem(Board board)
         {
             this.board = board;
             algorithms = new()

@@ -1,12 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
 using MonoChess.Enums;
-using MonoChess.Controllers;
 using MonoChess.Models;
+using Microsoft.Xna.Framework.Input;
 
 namespace MonoChess
 {
@@ -16,14 +19,17 @@ namespace MonoChess
         readonly SpriteBatch spriteBatch;
 
         readonly GameParameters parameters;
-        readonly AIController aiController;
-        readonly PlayerController playerController;
+        readonly AISystem ai;
         readonly Board board = new();
 
         Task<Move> nextMoveTask;
         Side currentSide = Side.White;
         ChessState state;
         Move move = Move.Null;
+        MouseState prevMs;
+        Piece selectedPiece = Piece.Null;
+        readonly List<Move> allowedMoves = [];
+        readonly List<Move> disallowedMoves = [];
 
         bool PlayerTurn  => currentSide == parameters.PlayerSide || !parameters.SinglePlayer;
         double calculationTime;
@@ -34,17 +40,17 @@ namespace MonoChess
             this.parameters = parameters;
             this.assetServer = assetServer;
 
-            aiController = new AIController(board);
-            playerController = new PlayerController(board);
+            ai = new AISystem(board);
+
+            prevMs = Mouse.GetState();
         }
 
         public void Reset()
         {
-            playerController.Interrupt();
             nextMoveTask.Wait();
 
             currentSide = Side.White;
-            playerController.SelectedPiece = Piece.Null;
+            selectedPiece = Piece.Null;
             move = Move.Null;
             board.SetPieces();
             state = ChessState.Opening;
@@ -69,16 +75,85 @@ namespace MonoChess
                 state = ChessState.Default;
             }
 
-            IController controller = PlayerTurn ? playerController : aiController;
-            calculationTime = 0;
-            nextMoveTask = controller.NextMoveAsync(parameters, currentSide, state);
-            move = await nextMoveTask;
+            MouseState ms = Mouse.GetState();
+
+            nextMoveTask = GetNextMove(ms);
+            Move move = await nextMoveTask;
+
+            prevMs = ms;
 
             if (move.IsNull) return;
 
             board.MakeMove(move, out _);
 
             currentSide = Util.ReverseSide(currentSide);
+        }
+
+        async Task<Move> GetNextMove(MouseState ms)
+        {
+            if (PlayerTurn)
+            {
+                bool clicked = Util.MouseClicked(ms.LeftButton, prevMs.LeftButton);
+
+                if (clicked)
+                {
+                    return GetPlayerMove();
+                }
+            }
+            else
+            {
+                calculationTime = 0;
+                return await ai.NextMoveAsync(parameters, currentSide, state);
+            }
+
+            return Move.Null;
+        }
+
+        Move GetPlayerMove()
+        {
+            const int tileSize = Board.SIZE / 8;
+
+            MouseState ms = Mouse.GetState();
+
+            var mouseVec = (new Vector2(ms.X, ms.Y) / tileSize);
+            var mousePos = new Position(Math.Clamp((int)mouseVec.X, 0, 7), Math.Clamp((int)mouseVec.Y, 0, 7));
+
+            Move move = Move.Null;
+
+            if (!selectedPiece.IsNull)
+            {
+                if (allowedMoves.Any(m => m.TargetPosition == mousePos))
+                {
+                    move = new Move(selectedPiece, mousePos);
+                }
+
+                if (!move.IsNull || mousePos == selectedPiece.Position)
+                {
+                    selectedPiece = Piece.Null;
+                    return move;
+                }
+            }
+
+            if (!board[mousePos].IsNull && board[mousePos].Side == currentSide)
+            {
+                allowedMoves.Clear();
+                disallowedMoves.Clear();
+
+                selectedPiece = board[mousePos];
+                foreach (var m in board.GenerateMoves(selectedPiece))
+                {
+                    if (board.DetectCheck(currentSide, m))
+                    {
+                        disallowedMoves.Add(m);
+                    }
+                    else
+                    {
+                        allowedMoves.Add(m);
+                    }
+                }
+            }
+
+            return move;
         }
 
         public void Draw(GameTime gameTime)
@@ -106,20 +181,20 @@ namespace MonoChess
             }
 
             //Draw selected piece moves
-            if (!playerController.SelectedPiece.IsNull)
+            if (!selectedPiece.IsNull)
             {
-                spriteBatch.Draw(assetServer.GetTexture(TileType.Selected), new Rectangle(playerController.SelectedPiece.Position.X * size,
-                    playerController.SelectedPiece.Position.Y * size, size, size), Color.White * 0.5f);
+                spriteBatch.Draw(assetServer.GetTexture(TileType.Selected), new Rectangle(selectedPiece.Position.X * size,
+                    selectedPiece.Position.Y * size, size, size), Color.White * 0.5f);
 
                 rect = new(0, 0, size, size);
-                foreach (var move in playerController.AllowedMoves)
+                foreach (var move in allowedMoves)
                 {
                     rect.X = move.TargetPosition.X * size;
                     rect.Y = move.TargetPosition.Y * size;
                     spriteBatch.Draw(assetServer.GetTexture(TileType.Allowed), rect, Color.White * 0.5f);
                 }
 
-                foreach (var move in playerController.DisallowedMoves)
+                foreach (var move in disallowedMoves)
                 {
                     rect.X = move.TargetPosition.X * size;
                     rect.Y = move.TargetPosition.Y * size;
