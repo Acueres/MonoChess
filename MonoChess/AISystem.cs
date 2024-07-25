@@ -1,6 +1,6 @@
 ﻿using MonoChess.Algorithms;
 using MonoChess.Enums;
-using MonoChess.Models;
+using MonoChess.Components;
 
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using MonoChess.Models;
+using MonoChess.Components;
 using MonoChess.Enums;
 
 namespace MonoChess.Algorithms
@@ -17,7 +17,7 @@ namespace MonoChess.Algorithms
 
             if (state == ChessState.Opening)
             {
-                return new Move(board[new(4, 6)], new(4, 4));
+                return new Move(board[new(4, 6)], new(4, 6), new(4, 4));
             }
 
             foreach (var move in board.GenerateMoves(side))

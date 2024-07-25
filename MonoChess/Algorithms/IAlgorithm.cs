@@ -1,4 +1,4 @@
-﻿using MonoChess.Models;
+﻿using MonoChess.Components;
 using MonoChess.Enums;
 
 namespace MonoChess.Algorithms

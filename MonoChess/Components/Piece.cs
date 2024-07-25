@@ -4,47 +4,41 @@ using System.Collections.Generic;
 
 using MonoChess.Enums;
 
-namespace MonoChess.Models
+namespace MonoChess.Components
 {
-    public struct Piece
+    public readonly struct Piece
     {
-        private readonly sbyte data = 0;
+        private readonly sbyte value = 0;
 
-        public readonly PieceType Type => byteToType[(byte)Math.Abs(data)];
-        public readonly Side Side => (Side)Math.Sign(data);
-        public Position Position { get; set; }
-        public readonly sbyte Data => data;
+        public readonly PieceType Type => (PieceType)Math.Abs(value);
+        public readonly Side Side => (Side)Math.Sign(value);
+        public readonly sbyte Value => value;
 
         public readonly bool CanCastle => Type == PieceType.Rook || Type == PieceType.King;
-        public readonly bool IsNull => data == 0;
+        public readonly bool IsNull => value == 0;
         public readonly Position[] Directions => directions[Type];
-        public readonly bool RangeLimited => rangeLimited[Type];
+        public readonly bool RangeLimited => rangeLimited.Contains(Type);
         public readonly int Score => scores[Type];
 
-        public Piece(PieceType type, Side side, Position position)
+        public Piece(PieceType type, Side side)
         {
-            data = (sbyte)((int)side * (int)type);
-            Position = position;
+            value = (sbyte)(Math.Sign((int)side) == 1 ? (int)type : -(int)type);
         }
 
-        public Piece(sbyte data, Position position)
+        public Piece(sbyte data)
         {
-            this.data = data;
-            Position = position;
+            value = data;
         }
 
         public static Piece Null => new();
 
         readonly static Dictionary<PieceType, Position[]> directions = [];
-        readonly static Dictionary<PieceType, bool> rangeLimited = new()
-        {
-            [PieceType.Pawn] = true,
-            [PieceType.Knight] = true,
-            [PieceType.King] = true,
-            [PieceType.Bishop] = false,
-            [PieceType.Rook] = false,
-            [PieceType.Queen] = false
-        };
+        readonly static HashSet<PieceType> rangeLimited =
+        [
+            PieceType.Pawn,
+            PieceType.Knight,
+            PieceType.King,
+        ];
 
         readonly static Dictionary<PieceType, int> scores = new()
         {
@@ -57,23 +51,22 @@ namespace MonoChess.Models
             [PieceType.King] = 1000
         };
 
-        readonly static Dictionary<byte, PieceType> byteToType = [];
         readonly static Dictionary<string, PieceType> nameToPieceType = [];
 
         static Piece()
         {
-            var orthogonal = new Position[] { new(0, 1), new(0, -1), new(1, 0), new(-1, 0) };
-            var diagonal = new Position[] { new(1, 1), new(-1, -1), new(1, 1), new(-1, 1), new(1, -1) };
+            Position[] orthogonal = [ new(0, 1), new(0, -1), new(1, 0), new(-1, 0) ];
+            Position[] diagonal = [ new(1, 1), new(-1, -1), new(1, 1), new(-1, 1), new(1, -1) ];
             var omnidirectional = orthogonal.Concat(diagonal).ToArray();
-            var knightMoves = new Position[]
-            {
+            Position[] knightMoves =
+            [
                 new(-1, 2), new(1, 2),
                 new(2, -1), new(2, 1),
                 new(-1, -2), new(1, -2),
                 new(-2, -1), new(-2, 1)
-            };
+            ];
 
-            directions.Add(PieceType.Pawn, [new(0, 1), new(1, 1), new(-1, 1)]);
+            directions.Add(PieceType.Pawn, [ new(0, 1), new(1, 1), new(-1, 1)] );
             directions.Add(PieceType.King, omnidirectional);
             directions.Add(PieceType.Queen, omnidirectional);
             directions.Add(PieceType.Rook, orthogonal);
@@ -87,41 +80,26 @@ namespace MonoChess.Models
                 if (type == PieceType.Null) continue;
                 nameToPieceType.Add(type.ToString().ToLower(), type);
             }
-
-            for (byte b = 0; b < pieces.Length; b++)
-            {
-                byteToType.Add(b, pieces[b]);
-            }
-        }
-
-        public static PieceType GetType(sbyte value)
-        {
-            return byteToType[(byte)Math.Abs(value)];
-        }
-
-        public static Side GetSide(sbyte value)
-        {
-            return (Side)Math.Sign(value);
         }
 
         public static bool operator ==(Piece p1, Piece p2)
         {
-            return p1.Type == p2.Type && p1.Side == p2.Side && p1.Position == p2.Position;
+            return p1.Type == p2.Type && p1.Side == p2.Side;
         }
 
         public static bool operator !=(Piece p1, Piece p2)
         {
-            return p1.Type != p2.Type || p1.Side != p2.Side || p1.Position != p2.Position;
+            return p1.Type != p2.Type || p1.Side != p2.Side;
         }
 
         public readonly override string ToString()
         {
-            return $"{Type}, {Side}, {Position}";
+            return $"{Type}, {Side}";
         }
 
         public readonly override int GetHashCode()
         {
-            return HashCode.Combine(Type, Side, Position);
+            return HashCode.Combine(Type, Side);
         }
 
         public readonly override bool Equals(object obj)

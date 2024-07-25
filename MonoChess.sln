@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.34909.67
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoChess", "MonoChess\MonoChess.csproj", "{EB9D864E-A6C1-452B-AA09-D73674D83002}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoChess", "MonoChess\MonoChess.csproj", "{EB9D864E-A6C1-452B-AA09-D73674D83002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{681AA4C3-C5C0-4D6F-9A27-44E6F05E3F25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Tests\Test.csproj", "{681AA4C3-C5C0-4D6F-9A27-44E6F05E3F25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

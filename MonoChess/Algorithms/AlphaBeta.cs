@@ -1,4 +1,4 @@
-﻿using MonoChess.Models;
+﻿using MonoChess.Components;
 using MonoChess.Enums;
 
 namespace MonoChess.Algorithms
@@ -11,7 +11,7 @@ namespace MonoChess.Algorithms
         {
             if (state == ChessState.Opening)
             {
-                return new Move(board[new(4, 6)], new(4, 4));
+                return new Move(board[new(4, 6)], new(4, 6), new(4, 4));
             }
 
             bool check = (state == ChessState.WhiteCheck && side == Side.White)

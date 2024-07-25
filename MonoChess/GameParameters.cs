@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 using MonoChess.Enums;
 
-namespace MonoChess.Models
+namespace MonoChess
 {
     public class GameParameters
     {

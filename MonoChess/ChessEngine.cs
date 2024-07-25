@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
 using MonoChess.Enums;
-using MonoChess.Models;
+using MonoChess.Components;
 using Microsoft.Xna.Framework.Input;
 
 namespace MonoChess
@@ -22,17 +22,22 @@ namespace MonoChess
         readonly AISystem ai;
         readonly Board board = new();
 
+        MouseState prevMs;
+
         Task<Move> nextMoveTask;
         Side currentSide = Side.White;
         ChessState state;
+
         Move move = Move.Null;
-        MouseState prevMs;
         Piece selectedPiece = Piece.Null;
+        Position selectedPiecePos = Position.Null;
+
         readonly List<Move> allowedMoves = [];
         readonly List<Move> disallowedMoves = [];
 
-        bool PlayerTurn  => currentSide == parameters.PlayerSide || !parameters.SinglePlayer;
         double calculationTime;
+
+        bool PlayerTurn() => currentSide == parameters.PlayerSide || !parameters.SinglePlayer;
 
         public ChessEngine(SpriteBatch spriteBatch, GameParameters parameters, AssetServer assetServer)
         {
@@ -51,6 +56,7 @@ namespace MonoChess
 
             currentSide = Side.White;
             selectedPiece = Piece.Null;
+            selectedPiecePos = Position.Null;
             move = Move.Null;
             board.SetPieces();
             state = ChessState.Opening;
@@ -91,7 +97,7 @@ namespace MonoChess
 
         async Task<Move> GetNextMove(MouseState ms)
         {
-            if (PlayerTurn)
+            if (PlayerTurn())
             {
                 bool clicked = Util.MouseClicked(ms.LeftButton, prevMs.LeftButton);
 
@@ -124,10 +130,10 @@ namespace MonoChess
             {
                 if (allowedMoves.Any(m => m.TargetPosition == mousePos))
                 {
-                    move = new Move(selectedPiece, mousePos);
+                    move = new Move(selectedPiece, selectedPiecePos, mousePos);
                 }
 
-                if (!move.IsNull || mousePos == selectedPiece.Position)
+                if (!move.IsNull || mousePos == selectedPiecePos)
                 {
                     selectedPiece = Piece.Null;
                     return move;
@@ -140,7 +146,8 @@ namespace MonoChess
                 disallowedMoves.Clear();
 
                 selectedPiece = board[mousePos];
-                foreach (var m in board.GenerateMoves(selectedPiece))
+                selectedPiecePos = mousePos;
+                foreach (var m in board.GenerateMoves(selectedPiece, selectedPiecePos))
                 {
                     if (board.DetectCheck(currentSide, m))
                     {
@@ -183,8 +190,8 @@ namespace MonoChess
             //Draw selected piece moves
             if (!selectedPiece.IsNull)
             {
-                spriteBatch.Draw(assetServer.GetTexture(TileType.Selected), new Rectangle(selectedPiece.Position.X * size,
-                    selectedPiece.Position.Y * size, size, size), Color.White * 0.5f);
+                spriteBatch.Draw(assetServer.GetTexture(TileType.Selected), new Rectangle(selectedPiecePos.X * size,
+                    selectedPiecePos.Y * size, size, size), Color.White * 0.5f);
 
                 rect = new(0, 0, size, size);
                 foreach (var move in allowedMoves)
@@ -206,8 +213,8 @@ namespace MonoChess
             if (state == ChessState.WhiteCheck || state == ChessState.BlackCheck)
             {
                 Side side = state == ChessState.WhiteCheck ? Side.White : Side.Black;
-                var king = board.GetKing(side);
-                rect = new(king.Position.X * size, king.Position.Y * size, size, size);
+                var pos = board.GetKingPosition(side);
+                rect = new(pos.X * size, pos.Y * size, size, size);
                 spriteBatch.Draw(assetServer.GetTexture(TileType.Danger), rect, Color.White * 0.5f);
             }
 
@@ -217,20 +224,20 @@ namespace MonoChess
                 rect = new(move.TargetPosition.X * size, move.TargetPosition.Y * size, size, size);
                 spriteBatch.Draw(assetServer.GetTexture(TileType.MoveHighlight), rect, Color.White * 0.5f);
 
-                rect = new(move.Piece.Position.X * size, move.Piece.Position.Y * size, size, size);
+                rect = new(move.CurrentPosition.X * size, move.CurrentPosition.Y * size, size, size);
                 spriteBatch.Draw(assetServer.GetTexture(TileType.MoveHighlight), rect, Color.White * 0.5f);
             }
 
             //Draw pieces
-            foreach (var piece in board.GetPieces())
+            foreach (var (piece, pos) in board.GetPieces())
             {
-                rect = new((int)(piece.Position.X * size + size * 0.2f), (int)(piece.Position.Y * size + size * 0.2f),
+                rect = new((int)(pos.X * size + size * 0.2f), (int)(pos.Y * size + size * 0.2f),
                     (int)(size * 0.7f), (int)(size * 0.8f));
 
-                spriteBatch.Draw(assetServer.GetTexture(piece.Data), rect, Color.White);
+                spriteBatch.Draw(assetServer.GetTexture(piece.Value), rect, Color.White);
             }
 
-            if (!PlayerTurn && calculationTime > 0.5)
+            if (!PlayerTurn() && calculationTime > 0.5)
             {
                 spriteBatch.Draw(assetServer.GetTexture(TileType.Shading),
                     new Rectangle(Board.SIZE / 2 - 60, Board.SIZE / 2 - 30, 120, 30), Color.White);

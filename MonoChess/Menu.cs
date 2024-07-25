@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
-using MonoChess.Models;
+using MonoChess.Components;
 using System;
 using System.Linq;
 

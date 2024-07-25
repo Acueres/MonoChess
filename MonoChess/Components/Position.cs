@@ -1,11 +1,25 @@
 ﻿using System;
 
-namespace MonoChess.Models
+namespace MonoChess.Components
 {
-    public struct Position(int x, int y)
+    public readonly struct Position
     {
-        public sbyte X { get; set; } = (sbyte)x;
-        public sbyte Y { get; set; } = (sbyte)y;
+        public readonly sbyte X { get; }
+        public readonly sbyte Y { get; }
+
+        public Position(int x, int y)
+        {
+            X = (sbyte)x;
+            Y = (sbyte)y;
+        }
+
+        public Position()
+        {
+            X = -1;
+            Y = -1;
+        }
+
+        public readonly bool IsNull => X == -1;
 
         public readonly bool Orthogonal => Math.Abs(X) + Math.Abs(Y) == 1;
 
@@ -13,6 +27,8 @@ namespace MonoChess.Models
         {
             return X >= lower && X < upper && Y >= lower && Y < upper;
         }
+
+        public static Position Null => new();
 
         public static Position operator +(Position val1, Position val2)
         {
@@ -27,14 +43,6 @@ namespace MonoChess.Models
         public static Position operator *(Position val, int multiplier)
         {
             return new Position(val.X * multiplier, val.Y * multiplier);
-        }
-
-        public static Position operator / (Position val, sbyte divisor)
-        {
-            val.X /= divisor;
-            val.Y /= divisor;
-
-            return val;
         }
 
         public static bool operator ==(Position val1, Position val2)

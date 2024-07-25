@@ -1,14 +1,15 @@
 ﻿using MonoChess.Enums;
 
-namespace MonoChess.Models
+namespace MonoChess.Components
 {
-    public struct Move(Piece piece, Position target)
+    public readonly struct Move(Piece piece, Position current, Position target)
     {
-        public Piece Piece { get; set; } = piece;
-        public Position TargetPosition { get; set; } = target;
+        public Piece Piece => piece;
+        public Position CurrentPosition => current;
+        public Position TargetPosition => target;
         public readonly bool IsNull => Piece.IsNull;
 
-        public static Move Null { get; } = new();
+        public static Move Null => new();
 
         public readonly bool CastlingCondition(Piece target)
         {

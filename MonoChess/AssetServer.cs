@@ -30,7 +30,7 @@ namespace MonoChess
         }
 
         public Texture2D GetTexture(int id) => pieces[id];
-        public Texture2D GetTexture(PieceType pieceType, Side side) => pieces[(int)pieceType * (int)side];
+        public Texture2D GetTexture(PieceType pieceType, Side side) => pieces[Math.Sign((int)side) == 1 ? (int)pieceType : -(int)pieceType];
         public Texture2D GetTexture(TileType tileType) => tiles[tileType];
         public DynamicSpriteFont GetFont(int fontSize) => fonts[fontSize];
 

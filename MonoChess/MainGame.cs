@@ -5,7 +5,6 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
 using MonoChess.Enums;
-using MonoChess.Models;
 
 namespace MonoChess
 {
