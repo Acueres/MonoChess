@@ -1,12 +1,10 @@
-﻿using MonoChess.Enums;
-
-namespace MonoChess.Components
+﻿namespace MonoChess.Components
 {
     public readonly struct Move(Piece piece, Position current, Position target)
     {
-        public Piece Piece => piece;
-        public Position CurrentPosition => current;
-        public Position TargetPosition => target;
+        public Piece Piece { get; } = piece;
+        public Position CurrentPosition { get; } = current;
+        public Position TargetPosition { get; } = target;
         public readonly bool IsNull => Piece.IsNull;
 
         public static Move Null => new();

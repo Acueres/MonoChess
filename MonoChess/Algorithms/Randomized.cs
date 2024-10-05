@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 using MonoChess.Components;
-using MonoChess.Enums;
 
 namespace MonoChess.Algorithms
 {

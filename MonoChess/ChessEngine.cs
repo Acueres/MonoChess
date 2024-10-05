@@ -7,12 +7,31 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using FontStashSharp;
 
-using MonoChess.Enums;
 using MonoChess.Components;
 using Microsoft.Xna.Framework.Input;
 
 namespace MonoChess
 {
+    public enum ChessState : byte
+    {
+        Opening,
+        Default,
+        WhiteCheck,
+        BlackCheck
+    }
+
+    public enum TileType : byte
+    {
+        White,
+        Black,
+        Allowed,
+        Disallowed,
+        Selected,
+        Shading,
+        Danger,
+        MoveHighlight
+    }
+
     public class ChessEngine
     {
         readonly AssetServer assetServer;

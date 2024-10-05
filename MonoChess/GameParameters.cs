@@ -3,7 +3,8 @@ using System.Reflection;
 
 using Newtonsoft.Json;
 
-using MonoChess.Enums;
+using MonoChess.Algorithms;
+using MonoChess.Components;
 
 namespace MonoChess
 {

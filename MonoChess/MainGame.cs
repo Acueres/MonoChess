@@ -4,10 +4,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
-using MonoChess.Enums;
-
 namespace MonoChess
 {
+    public enum GameState : byte
+    {
+        MainMenu,
+        SetupMenu,
+        Running,
+        Pause,
+        End
+    }
+
     public class MainGame : Game
     {
         readonly GraphicsDeviceManager graphics;

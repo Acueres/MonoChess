@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MonoChess.Enums;
 
 namespace MonoChess.Components
 {
@@ -277,7 +276,7 @@ namespace MonoChess.Components
 
                     yield return new Move(piece, pos, targetPos);
 
-                    if (piece.RangeLimited)
+                    if (piece.IsRangeLimited)
                     {
                         //allow pawn to move two tiles from initial rank
                         if (piece.Type == PieceType.Pawn && this[targetPos - direction].IsNull &&

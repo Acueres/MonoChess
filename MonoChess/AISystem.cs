@@ -1,5 +1,4 @@
 ﻿using MonoChess.Algorithms;
-using MonoChess.Enums;
 using MonoChess.Components;
 
 using System.Collections.Generic;

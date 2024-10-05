@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 
-using MonoChess.Enums;
 using MonoChess.GUI;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using FontStashSharp;
+
+using MonoChess.Algorithms;
 using MonoChess.Components;
+
 using System;
 using System.Linq;
 

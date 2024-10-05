@@ -2,10 +2,26 @@
 using System.Linq;
 using System.Collections.Generic;
 
-using MonoChess.Enums;
-
 namespace MonoChess.Components
 {
+    public enum PieceType : byte
+    {
+        Null,
+        Pawn,
+        Knight,
+        Bishop,
+        Rook,
+        Queen,
+        King
+    }
+
+    public enum Side : sbyte
+    {
+        Null = 0,
+        White = 1,
+        Black = -1
+    }
+
     public readonly struct Piece
     {
         private readonly sbyte value = 0;
@@ -17,7 +33,7 @@ namespace MonoChess.Components
         public readonly bool CanCastle => Type == PieceType.Rook || Type == PieceType.King;
         public readonly bool IsNull => value == 0;
         public readonly Position[] Directions => directions[Type];
-        public readonly bool RangeLimited => rangeLimited.Contains(Type);
+        public readonly bool IsRangeLimited => rangeLimits.Contains(Type);
         public readonly int Score => scores[Type];
 
         public Piece(PieceType type, Side side)
@@ -33,7 +49,7 @@ namespace MonoChess.Components
         public static Piece Null => new();
 
         readonly static Dictionary<PieceType, Position[]> directions = [];
-        readonly static HashSet<PieceType> rangeLimited =
+        readonly static HashSet<PieceType> rangeLimits =
         [
             PieceType.Pawn,
             PieceType.Knight,

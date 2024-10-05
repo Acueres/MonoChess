@@ -1,4 +1,4 @@
-﻿using MonoChess.Enums;
+﻿using MonoChess.Components;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

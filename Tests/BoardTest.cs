@@ -1,5 +1,4 @@
 using MonoChess.Components;
-using MonoChess.Enums;
 
 namespace Test
 {

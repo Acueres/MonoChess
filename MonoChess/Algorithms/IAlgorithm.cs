@@ -1,8 +1,14 @@
 ﻿using MonoChess.Components;
-using MonoChess.Enums;
 
 namespace MonoChess.Algorithms
 {
+    public enum AlgorithmType : byte
+    {
+        AlphaBeta,
+        Negamax,
+        Random
+    }
+
     interface IAlgorithm
     {
         public Move CalculateMove(int depth, Side side, ChessState state, Board board);

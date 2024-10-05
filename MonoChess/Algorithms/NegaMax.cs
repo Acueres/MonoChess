@@ -1,9 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-
-using MonoChess.Components;
-using MonoChess.Enums;
-
+﻿using MonoChess.Components;
 
 namespace MonoChess.Algorithms
 {
